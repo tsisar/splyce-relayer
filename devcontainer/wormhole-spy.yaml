@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wormhole-spy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wormhole-spy
+  template:
+    metadata:
+      labels:
+        app: wormhole-spy
+    spec:
+      containers:
+        - name: wormhole-spy
+          image: ghcr.io/wormhole-foundation/guardiand:latest
+          imagePullPolicy: Always
+          args:
+            - "spy"
+            - "--nodeKey"
+            - "/node.key"
+            - "--spyRPC"
+            - "[::]:7073"
+            - "--env"
+            - "testnet"
+          ports:
+            - containerPort: 7073
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wormhole-spy
+  namespace: default
+spec:
+  selector:
+    app: wormhole-spy
+  ports:
+    - protocol: TCP
+      port: 7073
+      targetPort: 7073
+  type: ClusterIP

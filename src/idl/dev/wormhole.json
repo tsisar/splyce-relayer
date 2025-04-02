@@ -1,0 +1,1823 @@
+{
+  "address": "A1QPk26BhDZ4Ugif8xNkijMbc5PqFqM6f94WgYvHtiBk",
+  "metadata": {
+    "name": "wormhole",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "get_vaa_data",
+      "discriminator": [
+        216,
+        185,
+        48,
+        216,
+        195,
+        3,
+        71,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "vaa",
+          "docs": [
+            "Verified Wormhole message account. The Wormhole program verified",
+            "signatures and posted the account data here. Read-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  111,
+                  115,
+                  116,
+                  101,
+                  100,
+                  86,
+                  65,
+                  65
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "vaa_hash"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "wormhole_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_program",
+          "docs": [
+            "Token Bridge program."
+          ],
+          "address": "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
+        },
+        {
+          "name": "wormhole_program",
+          "address": "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
+        }
+      ],
+      "args": [
+        {
+          "name": "vaa_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "docs": [
+            "Whoever initializes the config will be the owner of the program. Signer",
+            "for creating the [`SenderConfig`] and [`RedeemerConfig`] accounts."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender_config",
+          "docs": [
+            "Sender Config account, which saves program data useful for other",
+            "instructions, specifically for outbound transfers. Also saves the payer",
+            "of the [`initialize`](crate::initialize) instruction as the program's",
+            "owner."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  101,
+                  110,
+                  100,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "redeemer_config",
+          "docs": [
+            "Redeemer Config account, which saves program data useful for other",
+            "instructions, specifically for inbound transfers. Also saves the payer",
+            "of the [`initialize`](crate::initialize) instruction as the program's",
+            "owner."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_bridge_config",
+          "docs": [
+            "Token Bridge config. Token Bridge program needs this account to",
+            "invoke the Wormhole program to post messages. Even though it is a",
+            "required account for redeeming token transfers, it is not actually",
+            "used for completing these transfers."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_authority_signer",
+          "docs": [
+            "data; it is purely just a signer for SPL tranfers when it is delegated",
+            "spending approval for the SPL token."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121,
+                  95,
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_custody_signer",
+          "docs": [
+            "data; it is purely just a signer for Token Bridge SPL tranfers."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  117,
+                  115,
+                  116,
+                  111,
+                  100,
+                  121,
+                  95,
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_mint_authority",
+          "docs": [
+            "data; it is purely just a signer (SPL mint authority) for Token Bridge",
+            "wrapped assets."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  105,
+                  110,
+                  116,
+                  95,
+                  115,
+                  105,
+                  103,
+                  110,
+                  101,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "wormhole_bridge",
+          "docs": [
+            "Wormhole bridge data account (a.k.a. its config)."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  66,
+                  114,
+                  105,
+                  100,
+                  103,
+                  101
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "wormhole_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_emitter",
+          "docs": [
+            "that holds data; it is purely just a signer for posting Wormhole",
+            "messages on behalf of the Token Bridge program."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  109,
+                  105,
+                  116,
+                  116,
+                  101,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "wormhole_fee_collector",
+          "docs": [
+            "Wormhole fee collector account, which requires lamports before the",
+            "program can post a message (if there is a fee). Token Bridge program",
+            "handles the fee payments."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  99,
+                  111,
+                  108,
+                  108,
+                  101,
+                  99,
+                  116,
+                  111,
+                  114
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "wormhole_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_sequence",
+          "docs": [
+            "Token Bridge emitter's sequence account. Like with all Wormhole",
+            "emitters, this account keeps track of the sequence number of the last",
+            "posted message."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  83,
+                  101,
+                  113,
+                  117,
+                  101,
+                  110,
+                  99,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_emitter"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "wormhole_program"
+            }
+          }
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "wormhole_program",
+          "docs": [
+            "Wormhole program."
+          ],
+          "address": "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
+        },
+        {
+          "name": "token_bridge_program",
+          "docs": [
+            "Token Bridge program."
+          ],
+          "address": "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "receive_deposit",
+      "discriminator": [
+        219,
+        9,
+        95,
+        27,
+        224,
+        69,
+        20,
+        214
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "Payer will pay Wormhole fee to transfer tokens and create temporary",
+            "token account."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer_token_account",
+          "docs": [
+            "associated token account."
+          ],
+          "writable": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Redeemer Config account. Acts as the Token Bridge redeemer, which signs",
+            "for the complete transfer instruction. Read-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "foreign_contract",
+          "docs": [
+            "Foreign Contract account. The registered contract specified in this",
+            "account must agree with the target address for the Token Bridge's token",
+            "transfer. Read-only."
+          ]
+        },
+        {
+          "name": "token_bridge_wrapped_mint",
+          "docs": [
+            "Token Bridge wrapped mint info. This is the SPL token that will be",
+            "bridged from the foreign contract. The wrapped mint PDA must agree",
+            "with the native token's metadata in the wormhole message. Mutable."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  114,
+                  97,
+                  112,
+                  112,
+                  101,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vaa"
+              },
+              {
+                "kind": "account",
+                "path": "vaa"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "docs": [
+            "transaction."
+          ],
+          "writable": true
+        },
+        {
+          "name": "tmp_token_account",
+          "docs": [
+            "Program's temporary token account. This account is created before the",
+            "instruction is invoked to temporarily take custody of the payer's",
+            "tokens. When the tokens are finally bridged in, the tokens will be",
+            "transferred to the destination token accounts. This account will have",
+            "zero balance and can be closed."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  109,
+                  112
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_wrapped_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wormhole_program",
+          "docs": [
+            "Wormhole program."
+          ],
+          "address": "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
+        },
+        {
+          "name": "token_bridge_program",
+          "docs": [
+            "Token Bridge program."
+          ],
+          "address": "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
+        },
+        {
+          "name": "token_bridge_wrapped_meta",
+          "docs": [
+            "Token Bridge program's wrapped metadata, which stores info",
+            "about the token from its native chain:",
+            "* Wormhole Chain ID",
+            "* Token's native contract address",
+            "* Token's native decimals"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_wrapped_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_bridge_config",
+          "docs": [
+            "Token Bridge config. Read-only."
+          ]
+        },
+        {
+          "name": "vaa",
+          "docs": [
+            "Verified Wormhole message account. The Wormhole program verified",
+            "signatures and posted the account data here. Read-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  111,
+                  115,
+                  116,
+                  101,
+                  100,
+                  86,
+                  65,
+                  65
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "vaa_hash"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_bridge_claim",
+          "docs": [
+            "is true if the bridged assets have been claimed. If the transfer has",
+            "not been redeemed, this account will not exist yet."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_bridge_foreign_endpoint",
+          "docs": [
+            "Token Bridge foreign endpoint. This account should really be one",
+            "endpoint per chain, but the PDA allows for multiple endpoints for each",
+            "chain! We store the proper endpoint for the emitter chain."
+          ]
+        },
+        {
+          "name": "token_bridge_mint_authority"
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "accountant",
+          "writable": true
+        },
+        {
+          "name": "accountant_recipient",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "accountant"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "shares_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  110,
+                  100,
+                  101,
+                  114,
+                  108,
+                  121,
+                  105,
+                  110,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vault"
+              }
+            ]
+          }
+        },
+        {
+          "name": "shares_mint",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  104,
+                  97,
+                  114,
+                  101,
+                  115
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vault"
+              }
+            ]
+          }
+        },
+        {
+          "name": "underlying_mint",
+          "writable": true
+        },
+        {
+          "name": "recipient_shares_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "recipient"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "shares_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "user_data",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  100,
+                  97,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vault"
+              },
+              {
+                "kind": "account",
+                "path": "recipient"
+              }
+            ]
+          }
+        },
+        {
+          "name": "kyc_verified",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "recipient"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "access_control"
+            }
+          }
+        },
+        {
+          "name": "tokenized_vault_program",
+          "docs": [
+            "Tokenized Vault program"
+          ],
+          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+        },
+        {
+          "name": "access_control",
+          "docs": [
+            "Access Control program"
+          ],
+          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "token_interface_program",
+          "docs": [
+            "Token Interface program"
+          ]
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated Token program."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "rent",
+          "docs": [
+            "Rent sysvar."
+          ],
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "vaa_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "receive_message",
+      "discriminator": [
+        38,
+        144,
+        127,
+        225,
+        31,
+        225,
+        238,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "docs": [
+            "Payer will pay Wormhole fee to transfer tokens and create temporary",
+            "token account."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "payer_token_account",
+          "docs": [
+            "associated token account."
+          ],
+          "writable": true
+        },
+        {
+          "name": "config",
+          "docs": [
+            "Redeemer Config account. Acts as the Token Bridge redeemer, which signs",
+            "for the complete transfer instruction. Read-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_bridge_wrapped_mint",
+          "docs": [
+            "Token Bridge wrapped mint info. This is the SPL token that will be",
+            "bridged from the foreign contract. The wrapped mint PDA must agree",
+            "with the native token's metadata in the wormhole message. Mutable."
+          ],
+          "writable": true
+        },
+        {
+          "name": "recipient_token_account",
+          "docs": [
+            "Recipient associated token account."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "recipient"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_wrapped_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "recipient",
+          "docs": [
+            "transaction."
+          ],
+          "writable": true
+        },
+        {
+          "name": "tmp_token_account",
+          "docs": [
+            "Program's temporary token account. This account is created before the",
+            "instruction is invoked to temporarily take custody of the payer's",
+            "tokens. When the tokens are finally bridged in, the tokens will be",
+            "transferred to the destination token accounts. This account will have",
+            "zero balance and can be closed."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  109,
+                  112
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_wrapped_mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "wormhole_program",
+          "docs": [
+            "Wormhole program."
+          ],
+          "address": "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
+        },
+        {
+          "name": "token_bridge_program",
+          "docs": [
+            "Token Bridge program."
+          ],
+          "address": "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
+        },
+        {
+          "name": "token_bridge_wrapped_meta",
+          "docs": [
+            "Token Bridge program's wrapped metadata, which stores info",
+            "about the token from its native chain:",
+            "* Wormhole Chain ID",
+            "* Token's native contract address",
+            "* Token's native decimals"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  101,
+                  116,
+                  97
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "token_bridge_wrapped_mint"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "token_bridge_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_config",
+          "docs": [
+            "Token Bridge config. Read-only."
+          ]
+        },
+        {
+          "name": "vaa",
+          "docs": [
+            "Verified Wormhole message account. The Wormhole program verified",
+            "signatures and posted the account data here. Read-only."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  80,
+                  111,
+                  115,
+                  116,
+                  101,
+                  100,
+                  86,
+                  65,
+                  65
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "vaa_hash"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "wormhole_program"
+            }
+          }
+        },
+        {
+          "name": "token_bridge_claim",
+          "docs": [
+            "is true if the bridged assets have been claimed. If the transfer has",
+            "not been redeemed, this account will not exist yet."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_bridge_foreign_endpoint",
+          "docs": [
+            "Token Bridge foreign endpoint. This account should really be one",
+            "endpoint per chain, but the PDA allows for multiple endpoints for each",
+            "chain! We store the proper endpoint for the emitter chain."
+          ]
+        },
+        {
+          "name": "token_bridge_mint_authority"
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "Token program."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "docs": [
+            "Associated Token program."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "rent",
+          "docs": [
+            "Rent sysvar."
+          ],
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "vaa_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ForeignUser",
+      "discriminator": [
+        156,
+        1,
+        156,
+        7,
+        160,
+        171,
+        235,
+        71
+      ]
+    },
+    {
+      "name": "RedeemerConfig",
+      "discriminator": [
+        187,
+        195,
+        13,
+        200,
+        41,
+        129,
+        85,
+        191
+      ]
+    },
+    {
+      "name": "SenderConfig",
+      "discriminator": [
+        0,
+        241,
+        220,
+        77,
+        167,
+        128,
+        79,
+        152
+      ]
+    },
+    {
+      "name": "UserData",
+      "discriminator": [
+        139,
+        248,
+        167,
+        203,
+        253,
+        220,
+        210,
+        221
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "OwnerOnly",
+      "msg": "Invalid owner"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidMessage",
+      "msg": "Vault was shutdown"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidTokenBridgeMintAuthority",
+      "msg": "Invalid token bridge mint authority"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidTokenBridgeForeignEndpoint",
+      "msg": "Invalid token bridge foreign endpoint"
+    },
+    {
+      "code": 6004,
+      "name": "InvalidForeignContract",
+      "msg": "Invalid foreign contract"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidTransferToAddress",
+      "msg": "Invalid transfer to address"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidTransferToChain",
+      "msg": "Invalid transfer to chain"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidTransferTokenChain",
+      "msg": "Invalid transfer token chain"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidTokenBridgeConfig",
+      "msg": "Invalid token bridge config"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidRecipient",
+      "msg": "Invalid recipient"
+    },
+    {
+      "code": 6010,
+      "name": "AlreadyRedeemed",
+      "msg": "Already redeemed"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidPayerAta",
+      "msg": "Invalid payer ATA"
+    }
+  ],
+  "types": [
+    {
+      "name": "ForeignUser",
+      "docs": [
+        "Foreign emitter account data."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "chain",
+            "docs": [
+              "Emitter chain. Cannot equal `1` (Solana's Chain ID)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "address",
+            "docs": [
+              "Emitter address. Cannot be zero address."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "ata_athoryty",
+            "docs": [
+              "Authority of the ATA."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "token_bridge_foreign_endpoint",
+            "docs": [
+              "Token Bridge foreign endpoint."
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "InboundTokenBridgeAddresses",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "custody_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint_authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OutboundTokenBridgeAddresses",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "config",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "custody_signer",
+            "type": "pubkey"
+          },
+          {
+            "name": "emitter",
+            "type": "pubkey"
+          },
+          {
+            "name": "sequence",
+            "type": "pubkey"
+          },
+          {
+            "name": "wormhole_bridge",
+            "docs": [
+              "[BridgeData](wormhole_anchor_sdk::wormhole::BridgeData) address."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "wormhole_fee_collector",
+            "docs": [
+              "[FeeCollector](wormhole_anchor_sdk::wormhole::FeeCollector) address."
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedeemerConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Program's owner."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "token_bridge",
+            "docs": [
+              "Token Bridge program's relevant addresses."
+            ],
+            "type": {
+              "defined": {
+                "name": "InboundTokenBridgeAddresses"
+              }
+            }
+          },
+          {
+            "name": "relayer_fee",
+            "docs": [
+              "Relayer Fee"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "relayer_fee_precision",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SenderConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Program's owner."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "PDA bump."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "token_bridge",
+            "docs": [
+              "Token Bridge program's relevant addresses."
+            ],
+            "type": {
+              "defined": {
+                "name": "OutboundTokenBridgeAddresses"
+              }
+            }
+          },
+          {
+            "name": "finality",
+            "docs": [
+              "AKA consistency level. u8 representation of Solana's",
+              "[Finality](wormhole_anchor_sdk::wormhole::Finality)."
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UserData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "deposited",
+            "type": "u64"
+          },
+          {
+            "name": "whitelisted",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "serialization": "bytemuckunsafe",
+      "repr": {
+        "kind": "rust",
+        "packed": true
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "index_buffer",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "shares_bump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "key",
+            "type": "pubkey"
+          },
+          {
+            "name": "underlying_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "underlying_token_acc",
+            "type": "pubkey"
+          },
+          {
+            "name": "underlying_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "accountant",
+            "type": "pubkey"
+          },
+          {
+            "name": "total_debt",
+            "type": "u64"
+          },
+          {
+            "name": "total_shares",
+            "type": "u64"
+          },
+          {
+            "name": "minimum_total_idle",
+            "type": "u64"
+          },
+          {
+            "name": "total_idle",
+            "type": "u64"
+          },
+          {
+            "name": "deposit_limit",
+            "type": "u64"
+          },
+          {
+            "name": "user_deposit_limit",
+            "type": "u64"
+          },
+          {
+            "name": "min_user_deposit",
+            "type": "u64"
+          },
+          {
+            "name": "strategies_amount",
+            "type": "u64"
+          },
+          {
+            "name": "is_shutdown",
+            "type": "bool"
+          },
+          {
+            "name": "kyc_verified_only",
+            "type": "bool"
+          },
+          {
+            "name": "direct_deposit_enabled",
+            "type": "bool"
+          },
+          {
+            "name": "whitelisted_only",
+            "type": "bool"
+          },
+          {
+            "name": "direct_withdraw_enabled",
+            "type": "bool"
+          },
+          {
+            "name": "profit_max_unlock_time",
+            "type": "u64"
+          },
+          {
+            "name": "full_profit_unlock_date",
+            "type": "u64"
+          },
+          {
+            "name": "profit_unlocking_rate",
+            "type": "u64"
+          },
+          {
+            "name": "last_profit_update",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

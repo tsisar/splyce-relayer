@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  wormhole-spy:
+    image: ghcr.io/wormhole-foundation/guardiand:latest
+    pull_policy: always
+    platform: linux/amd64
+    network_mode: "host"
+    ports:
+      - "7073:7073"
+    entrypoint: "/guardiand"
+    command:
+      - "spy"
+      - "--nodeKey"
+      - "/node.key"
+      - "--spyRPC"
+      - "[::]:7073"
+      - "--env"
+      - "testnet"
+    restart: unless-stopped
