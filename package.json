@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "start": "ts-node src/app.ts",
-    "worker": "ts-node src/vaaWorker.ts",
-    "worker2": "ts-node src/worker.ts",
+    "worker": "ts-node src/worker.ts",
+    "backfill": "ts-node src/backfillVaa.ts",
     "build": "tsc",
     "watch": "tsc --watch"
   },
@@ -23,6 +23,7 @@
     "node-redis": "^0.1.7",
     "redis": "^4.7.0",
     "typescript": "^5.1.6",
+    "undici": "^7.7.0",
     "winston": "^3.8.2",
     "yargs": "^17.7.1"
   },

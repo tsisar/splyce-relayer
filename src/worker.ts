@@ -27,28 +27,55 @@ import {
 
 const TAG = "Worker";
 
-const mockRedisValue = {
-    vaa: "AQAAAAABAK506gdY40UmOW3FORVAl5yr4c434TRdf9ITE8nKcPhHAeHIYzEzyEK4dTOGfjsGj+bwKvxGBPeHEapmSPUfkvkAZ+1HMAAAAAAnEgAAAAAAAAAAAAAAANtUkiZfYDiDHon0lWcP+Qmt6UvZAAAAAAAAEgMBAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYagAAAAAAAAAAAAAAAAHH1LGWywx7AddD+8YRapAjeccjgnEnXAn45cglOAqDVoBIbgGnZ+4+0tD6SHqgTkTo38ySojAAEAAAAAAAAAAAAAAADvtkQVkNqb+N1bKvFA5LH0j6fsDAHfAg8xynlUN7+nNlSUp4oN5SUJgHH9VUQPmhoGPxA1rdiu9jRatWfUj6hPw1Hhsmz/NXeoz0Zj0pHwZHgVBLSf",
-    payload: "df020f31ca795437bfa7365494a78a0de525098071fd55440f9a1a063f1035add8aef6345ab567d48fa84fc351e1b26cff3577a8cf4663d291f064781504b49f"
-};
-
+const ACCOUNTANT_ID = new PublicKey("EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7");
 const TOKEN_BRIDGE_PID = "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
 const TOKEN_BRIDGE_PROGRAM_ID = new PublicKey(TOKEN_BRIDGE_PID);
 const CORE_BRIDGE_PID = "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
 
-function decodeVaultPayload(payloadHex: string) {
-    const payload = Buffer.from(payloadHex, "hex");
+export function extractRawTokenTransferPayload(base64Vaa: string): string {
+    const vaaBuffer = Buffer.from(base64Vaa, "base64");
 
-    if (payload.length !== 64) {
-        throw new Error("Expected 64 bytes (2x Solana addresses)");
+    const parsed = parseVaa(vaaBuffer);
+
+    const payload = parsed.payload;
+
+    const payloadType = payload.readUInt8(0);
+    if (payloadType !== 3) {
+        throw new Error(`Not a TransferWithPayload. Found payload type: ${payloadType}`);
     }
 
-    const sharesRecipient = payload.subarray(0, 32).toString("hex");
-    const vaultAddress = payload.subarray(32, 64).toString("hex");
+    // Payload structure:
+    // 1 byte  - payload type
+    // 32 bytes - amount
+    // 32 bytes - origin address
+    // 2 bytes  - origin chain
+    // 32 bytes - target address
+    // 2 bytes  - target chain
+    // 32 bytes - from address
+    // = 133 bytes header
+
+    const transferPayload = payload.subarray(133); // відрізаємо заголовок
+    return transferPayload.toString("hex");
+}
+
+function decodeTokenTransferPayload(payloadHex: string) {
+    if (payloadHex.length <= 128) {
+        throw new Error("Payload too short. Expected more than 64 bytes (128 hex chars).");
+    }
+
+    const addressPart = payloadHex.slice(-128);
+    const chainIdHex = payloadHex.slice(0, payloadHex.length - 128);
+    const chainId = parseInt(chainIdHex, 16);
+
+    const payload = Buffer.from(addressPart, "hex");
+
+    const sharesRecipientHex = payload.subarray(0, 32).toString("hex");
+    const vaultAddressHex = payload.subarray(32, 64).toString("hex");
 
     return {
-        sharesRecipient,
-        vaultAddress,
+        chainId,
+        sharesRecipientAddress: sharesRecipientHex,
+        vaultAddress: vaultAddressHex,
     };
 }
 
@@ -71,10 +98,6 @@ async function postVaaOnSolana(
     log.debug(TAG, "Posted VAA tx:", txResults.map(r => r.signature).join(", "));
 }
 
-async function receive(manager: Manager, payer: Keypair, vaa: string) {
-
-}
-
 async function relay(manager: Manager, payer: Keypair, vaa: string) {
     // Set up provider.
     const provider = await manager.getProvider();
@@ -82,7 +105,6 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     const connection = provider.connection
     // Wormhole program
     const wormholeProgram = await manager.getProgram();
-
     // Get signed VAA.
     const signedVaa = Buffer.from(vaa, "base64")
 
@@ -138,15 +160,17 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         process.exit(1);
     }
 
-    const {sharesRecipient, vaultAddress} = decodeVaultPayload(mockRedisValue.payload);
-    log.debug(TAG, "Shares Recipient:", sharesRecipient );
+    const tokenTransferPayload = extractRawTokenTransferPayload(vaa);
+    log.debug(TAG, "Payload:", tokenTransferPayload);
 
-    const recipient = new PublicKey(hexToSolanaBase58(sharesRecipient));
-    log.debug(TAG, "Recipient:", recipient);
-    log.debug(TAG, "Shares Recipient: G1XjoJpF6NvfSsbkreefjQgTf4JY7upUYABnGqWdozRi" );
+    const {chainId, sharesRecipientAddress, vaultAddress} = decodeTokenTransferPayload(tokenTransferPayload);
+    log.debug(TAG, "Decoded payload chainId:", chainId);
+
+    const recipient = new PublicKey(hexToSolanaBase58(sharesRecipientAddress));
+    log.debug(TAG, "Decoded payload sharesRecipientAddress:", recipient.toBase58());
 
     const vault = new PublicKey(hexToSolanaBase58(vaultAddress));
-    log.debug(TAG, "Vault:", vault);
+    log.debug(TAG, "Decoded payload vaultAddress:", vault.toBase58());
 
     const tokenBridgeClaim = deriveClaimKey(
         TOKEN_BRIDGE_PROGRAM_ID,
@@ -155,11 +179,9 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         parsedVaa.sequence
     );
     log.debug(TAG, `tokenBridgeClaim expected: ${tokenBridgeClaim.toBase58()}`);
-    log.debug(TAG, `tokenBridgeClaim expected: 4hqE1jUJTtqmBesdeD3EzSBZBnzx8sWwqHq35HgZzkMA`);
 
     const tokenBridgeConfig = deriveTokenBridgeConfigKey(TOKEN_BRIDGE_PROGRAM_ID);
     log.debug(TAG, `tokenBridgeConfig expected: ${tokenBridgeConfig.toBase58()}`);
-    log.debug(TAG, `tokenBridgeConfig expected: 8PFZNjn19BBYVHNp4H31bEW7eAmu78Yf2RKV8EeA461K`);
 
     const tokenBridgeForeignEndpoint = deriveEndpointKey(
         TOKEN_BRIDGE_PROGRAM_ID,
@@ -167,13 +189,9 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         parsedVaa.emitterAddress
     );
     log.debug(TAG, `tokenBridgeForeignEndpoint expected: ${tokenBridgeForeignEndpoint.toBase58()}`);
-    log.debug(TAG, `tokenBridgeForeignEndpoint expected: ErgSoGgESgjk9Jc4u61URqPUwx3yjW6htUShBkiFW6ui`);
-
 
     const tokenBridgeMintAuthority = deriveMintAuthorityKey(TOKEN_BRIDGE_PROGRAM_ID);
     log.debug(TAG, `tokenBridgeMintAuthority expected: ${tokenBridgeMintAuthority.toBase58()}`);
-    log.debug(TAG, `tokenBridgeMintAuthority expected: rRsXLHe7sBHdyKU3KY3wbcgWvoT1Ntqudf6e9PKusgb`);
-
 
     const tokenBridgeWrappedMint = deriveWrappedMintKey(
         TOKEN_BRIDGE_PROGRAM_ID,
@@ -181,7 +199,6 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         Buffer.from(transferPayload.originAddress, "hex")
     );
     log.debug(TAG, `tokenBridgeWrappedMint expected: ${tokenBridgeWrappedMint.toBase58()}`);
-    log.debug(TAG, `tokenBridgeWrappedMint expected: 23Adx8na44L3M1Nf9RrUpQPb41eufdRXKseg25FfcJtw`);
 
     const [depositPDA] = PublicKey.findProgramAddressSync(
         [
@@ -191,8 +208,6 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         wormholeProgram.programId
     );
     log.debug(TAG, `depositPDA expected: ${depositPDA.toBase58()}`);
-
-    const accountant = new PublicKey("EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7");
 
     try {
         const tx1 = await wormholeProgram.methods
@@ -221,7 +236,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
                 deposit: depositPDA,
                 recipient,
                 vault,
-                accountant: accountant,
+                accountant: ACCOUNTANT_ID,
                 underlyingMint: tokenBridgeWrappedMint,
             })
             .signers([payer])
@@ -260,7 +275,7 @@ function getBotKeypair(): Keypair {
 }
 
 async function main() {
-    const hexVAA = mockRedisValue.vaa
+    const vaa = "AQAAAAABAK506gdY40UmOW3FORVAl5yr4c434TRdf9ITE8nKcPhHAeHIYzEzyEK4dTOGfjsGj+bwKvxGBPeHEapmSPUfkvkAZ+1HMAAAAAAnEgAAAAAAAAAAAAAAANtUkiZfYDiDHon0lWcP+Qmt6UvZAAAAAAAAEgMBAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYagAAAAAAAAAAAAAAAAHH1LGWywx7AddD+8YRapAjeccjgnEnXAn45cglOAqDVoBIbgGnZ+4+0tD6SHqgTkTo38ySojAAEAAAAAAAAAAAAAAADvtkQVkNqb+N1bKvFA5LH0j6fsDAHfAg8xynlUN7+nNlSUp4oN5SUJgHH9VUQPmhoGPxA1rdiu9jRatWfUj6hPw1Hhsmz/NXeoz0Zj0pHwZHgVBLSf";
 
     const payer = getBotKeypair()
 
@@ -268,7 +283,17 @@ async function main() {
     const manager = new Manager(payer);
 
     // Relay VAA.
-    await relay(manager, payer, hexVAA);
+    await relay(manager, payer, vaa);
+}
+
+export async function processVAA(vaa: string) {
+    const payer = getBotKeypair()
+
+    // Set up the manager.
+    const manager = new Manager(payer);
+
+    // Relay VAA.
+    await relay(manager, payer, vaa);
 }
 
 main();
