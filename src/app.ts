@@ -55,7 +55,7 @@ const EMITTERS = [
             return;
         }
 
-        if (receiver !== "A1QPk26BhDZ4Ugif8xNkijMbc5PqFqM6f94WgYvHtiBk") {
+        if (receiver !== "8vf4LsW4saqaGVJNj1mZNYX88ojp9hYc1EEnwCHWHCGa") {
             ctx.logger.debug(`Filtered out receiver: ${receiver}`);
             return;
         }
@@ -111,6 +111,8 @@ const EMITTERS = [
 
     await app.listen();
 })();
+
+// що робити з транзакцією, якщо ми її прогавили?
 
 // TransferWithPayload processing for:
 // Token: 10002:0000000000000000000000001c7d4b196cb0c7b01d743fbc6116a902379c7238

@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "worker": "ts-node src/vaaWorker.ts",
+    "worker2": "ts-node src/worker.ts",
     "build": "tsc",
     "watch": "tsc --watch"
   },
@@ -12,6 +13,7 @@
     "@certusone/wormhole-sdk": "^0.9.11",
     "@coral-xyz/anchor": "^0.31.0",
     "@mysten/sui.js": "^0.32.1",
+    "@solana/spl-token": "^0.4.13",
     "@types/node": "^22.9.0",
     "@wormhole-foundation/relayer-engine": "^0.2.1",
     "bs58": "^5.0.0",

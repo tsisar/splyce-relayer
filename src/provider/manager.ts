@@ -1,15 +1,15 @@
-import { AnchorProvider, Program, Wallet, Idl } from "@coral-xyz/anchor";
+import {AnchorProvider, Program, Wallet, Idl, Provider} from "@coral-xyz/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
 import { CONFIRM_TIMEOUT, PRODUCTION, SOLANA_RPC_ENDPOINT } from "../config/config";
-import WormholeIdlDev from "../idl/dev/wormhole_relayer.json";
-import WormholeIdlProd from "../idl/prod/wormhole.json";
 import {log} from "../logger/logger"
+import {WormholeRelayer} from "../types/wormhole_relayer";
+import IDL from "../idl/wormhole_relayer.json";
 
 const TAG = "ProviderManager";
 
 export class Manager {
     private provider: AnchorProvider | null = null;
-    private program: Program | null = null;
+    private program: Program<WormholeRelayer> | null = null;
     private readonly adminKeypair: Keypair;
 
     constructor(adminKeypair: Keypair) {
@@ -38,12 +38,10 @@ export class Manager {
     private initProgram() {
         if (!this.provider) throw new Error("Provider is not initialized");
 
-        const idl = PRODUCTION ? WormholeIdlProd : WormholeIdlDev;
-
         log.debug(TAG, "Initializing program...");
         log.debug(TAG, `Environment: ${PRODUCTION ? "PRODUCTION" : "DEVELOPMENT"}`);
 
-        this.program = new Program(idl as Idl, this.provider);
+        this.program = new Program(IDL as Idl, this.provider);
 
         log.debug(TAG, "Program initialized.");
     }
@@ -69,7 +67,7 @@ export class Manager {
         }
     }
 
-    public async getProgram(): Promise<Program> {
+    public async getProgram(): Promise<Program<WormholeRelayer>> {
         await this.ensureProviderHealth();
         if (!this.program) throw new Error("Program is not initialized");
         return this.program;
