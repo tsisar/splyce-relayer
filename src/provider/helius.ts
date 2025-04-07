@@ -26,7 +26,7 @@ function updateAverage(priorityFee?: number): number {
         }
     }
     avgPriorityFee = Math.round(avgPriorityFee);
-    console.log("Avg Priority Fee:", avgPriorityFee);
+    log.debug(TAG, "Avg Priority Fee:", avgPriorityFee);
     return avgPriorityFee;
 }
 
@@ -42,11 +42,11 @@ export async function getPriorityFee(
     rpcEndpoint: string = config.SOLANA_RPC_ENDPOINT,
     priorityLevel: string = config.PRIORITY_LEVEL
 ): Promise<number | undefined> {
-    console.log("Priority Level:", priorityLevel);
+    log.debug(TAG, "Priority Level:", priorityLevel);
 
     const serializedTx = versionedTx.serialize();
     const txSize = serializedTx.length;
-    console.log(`Transaction size: ${txSize} bytes`);
+    log.debug(TAG, `Transaction size: ${txSize} bytes`);
 
     const encodedTx = bs58.encode(serializedTx);
 
@@ -69,19 +69,19 @@ export async function getPriorityFee(
 
         if (!response.ok) {
             const errorBody = await response.text();
-            console.error(`HTTP error! status: ${response.status}, body: ${errorBody}`);
+            log.error(TAG, `HTTP error! status: ${response.status}, body: ${errorBody}`);
             return undefined;
         }
 
         const data = (await response.json()) as HeliusPriorityFeeResponse;
-        //console.log("Response from Helium RPC:", data);
+        //log.debug(TAG, "Response from Helium RPC:", data);
 
         const priorityFee = data.result?.priorityFeeEstimate;
         updateAverage(priorityFee);
 
         return priorityFee === undefined || priorityFee < avgPriorityFee ? avgPriorityFee : priorityFee;
     } catch (error) {
-        console.error("Error fetching priority fee:", error);
+        log.error(TAG, "Error fetching priority fee:", error);
         return undefined;
     }
 }

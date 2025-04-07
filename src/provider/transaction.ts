@@ -19,8 +19,10 @@ import {
     TRANSACTION_RETRY_INTERVAL
 } from "../config/config";
 import {getSimulationComputeUnits} from "@solana-developers/helpers";
+import {log} from "../logger/logger";
 
 const COMPUTE_UNIT_FOR_BUDGET = 400;
+const TAG = "Transaction";
 
 async function createSignedVersionedTransaction(
     provider: AnchorProvider,
@@ -51,7 +53,7 @@ async function getComputeBudgetInstructions(
     // const totalFeeLamports = computedFeeLamports + TRANSACTION_FEE;
     //
     // if (userFee !== 0 && userFee < totalFeeLamports) {
-    //     console.error(`User fee (${userFee} lamports) is less than the required total priority fee (${totalFeeLamports} lamports). Transaction failed.`);
+    //     log.error(TAG, `User fee (${userFee} lamports) is less than the required total priority fee (${totalFeeLamports} lamports). Transaction failed.`);
     //     throw new Error("User fee is less than the total required priority fee.");
     // }
 
@@ -68,7 +70,7 @@ async function simulateTransaction(provider: AnchorProvider, versionedTx: Versio
     );
 
     if (simulationResult.value.err) {
-        console.error("Transaction simulation error:", simulationResult.value.err);
+        log.error(TAG, "Transaction simulation error:", simulationResult.value.err);
         let fullMessage: string = "Transaction simulation failed.";
         const logs: string[] = simulationResult.value.logs ?? [];
 
@@ -80,10 +82,10 @@ async function simulateTransaction(provider: AnchorProvider, versionedTx: Versio
             const anchorError = AnchorError.parse(logs);
             if (anchorError && anchorError.error && anchorError.error.errorMessage) {
                 fullMessage = anchorError.error.errorMessage;
-                console.error("Parsed Anchor error message (simulation):", fullMessage);
+                log.error(TAG, "Parsed Anchor error message (simulation):", fullMessage);
             }
         } catch (parseError) {
-            console.error("Could not parse simulation error", parseError);
+            log.error(TAG, "Could not parse simulation error", parseError);
         }
 
         const logsText = logs.join("\n");
@@ -93,7 +95,7 @@ async function simulateTransaction(provider: AnchorProvider, versionedTx: Versio
         if (match) {
             shortMessage = `Error Code: ${match[1].trim()}. Error Number: ${match[2].trim()}. Error Message: ${match[3].trim()}.`;
         }
-        console.error("Simulation error short message:", shortMessage);
+        log.error(TAG, "Simulation error short message:", shortMessage);
         throw new Error(shortMessage);
     }
 }
@@ -116,14 +118,14 @@ export async function sendTransaction(
 
             // Get Helius priority fee
             let priorityFee = await getPriorityFee(versionedTx);
-            console.log("Priority Fee from Helius:", priorityFee);
+            log.debug(TAG, "Priority Fee from Helius:", priorityFee);
 
             if (priorityFee === null || priorityFee === undefined || priorityFee < DEFAULT_COMPUTE_UNIT_PRICE) {
                 priorityFee = DEFAULT_COMPUTE_UNIT_PRICE;
-                console.log(`Using default compute unit price: ${priorityFee}`);
+                log.debug(TAG, `Using default compute unit price: ${priorityFee}`);
             } else if (priorityFee > MAX_COMPUTE_UNIT_PRICE) {
                 priorityFee = MAX_COMPUTE_UNIT_PRICE;
-                console.log(`Using max compute unit price: ${priorityFee}`);
+                log.debug(TAG, `Using max compute unit price: ${priorityFee}`);
             }
 
             // Get required compute units
@@ -132,7 +134,7 @@ export async function sendTransaction(
             let requiredUnits = units ?? COMPUTE_UNIT_LIMIT;
             let buffer = requiredUnits * COMPUTE_UNIT_BUFFER;
             requiredUnits = Math.trunc(requiredUnits + buffer + COMPUTE_UNIT_FOR_BUDGET); // Add buffer to the computed units
-            console.log("Required units:", requiredUnits);
+            log.debug(TAG, "Required units:", requiredUnits);
 
             // Get compute budget instructions
             const computeBudgetInstructions = await getComputeBudgetInstructions(priorityFee, requiredUnits);
@@ -150,14 +152,14 @@ export async function sendTransaction(
 
             // Send and confirm transaction
             const signature = await provider.sendAndConfirm(finalVersionedTx);
-            console.log("Transaction confirmed:", signature);
+            log.debug(TAG, "Transaction confirmed:", signature);
 
             // Get transaction meta (fee and compute units)
             const transactionMeta = await getTransactionMeta(provider, signature);
             if (transactionMeta !== null) {
-                console.log(`Fee: ${transactionMeta.fee} SOL, Units consumed: ${transactionMeta.units}`);
+                log.debug(TAG, `Fee: ${transactionMeta.fee} SOL, Units consumed: ${transactionMeta.units}`);
             } else {
-                console.log(`Transaction details not found, signature: ${signature}`);
+                log.debug(TAG, `Transaction details not found, signature: ${signature}`);
             }
 
             return signature;
@@ -170,17 +172,17 @@ export async function sendTransaction(
                 const txStatus = await provider.connection.getSignatureStatus(err.signature);
 
                 if (txStatus?.value?.confirmationStatus === "confirmed") {
-                    console.log("Transaction was actually confirmed:", err.signature);
+                    log.debug(TAG, "Transaction was actually confirmed:", err.signature);
                     return err.signature;
                 } else if (attempt === retries) {
-                    console.error("Max retries reached. Transaction failed.");
+                    log.error(TAG, "Max retries reached. Transaction failed.");
                     throw new Error("Transaction failed after maximum retries.");
                 }
 
-                console.log(`Retrying transaction... Attempt ${attempt + 1}/${retries}`);
+                log.debug(TAG, `Retrying transaction... Attempt ${attempt + 1}/${retries}`);
                 await delay(TRANSACTION_RETRY_INTERVAL);
             } else {
-                console.error(`Transaction attempt ${attempt} failed:`, err);
+                log.error(TAG, `Transaction attempt ${attempt} failed:`, err);
                 throw new Error(err.message || err.toString());
             }
         }
@@ -200,11 +202,11 @@ async function getTransactionMeta(provider: AnchorProvider, transactionHash: str
             const units = transactionDetails.meta.computeUnitsConsumed ?? null;
             return { fee: feeInLamports / 1e9, units };
         } else {
-            console.log('Transaction details not found or meta not available');
+            log.debug(TAG, 'Transaction details not found or meta not available');
             return null;
         }
     } catch (error) {
-        console.error('Error fetching transaction details:', error);
+        log.error(TAG, 'Error fetching transaction details:', error);
         throw error;
     }
 }

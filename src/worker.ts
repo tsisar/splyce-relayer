@@ -86,7 +86,7 @@ async function postVaaOnSolana(
     coreBridge: PublicKey,
     signedMsg: Buffer
 ): Promise<string[]> {
-    console.log("---------------------------------------------------------");
+    log.debug(TAG, "---------------------------------------------------------");
     log.debug(TAG, "Post Vaa On Solana...");
 
     const wallet = NodeWallet.fromSecretKey(payer.secretKey);
@@ -109,7 +109,7 @@ async function buildReceiveInstruction(
     tokenBridgeWrappedMint:
     PublicKey
 ): Promise<TransactionInstruction> {
-    console.log("---------------------------------------------------------");
+    log.debug(TAG, "---------------------------------------------------------");
     log.debug(TAG, "Build Receive Instruction...");
 
     const tokenBridgeClaim = deriveClaimKey(
@@ -147,7 +147,7 @@ async function buildReceiveInstruction(
 }
 
 async function buildExecuteDepositInstruction(wormholeProgram: Program<WormholeRelayer>, parsedVaa: ParsedVaa, tokenBridgeWrappedMint: PublicKey, recipient: PublicKey, vault: PublicKey): Promise<TransactionInstruction> {
-    console.log("---------------------------------------------------------");
+    log.debug(TAG, "---------------------------------------------------------");
     log.debug(TAG, "Build ExecuteDeposit Instruction...");
 
     const [depositPDA] = PublicKey.findProgramAddressSync(
@@ -274,7 +274,7 @@ function getBotKeypair(): Keypair {
         try {
             privateKeyArray = JSON.parse(PRIVATE_KEY);
         } catch (error) {
-            console.error("Error parsing PRIVATE_KEY:", error);
+            log.error(TAG, "Error parsing PRIVATE_KEY:", error);
             throw new Error("Invalid PRIVATE_KEY format. It should be a JSON array of numbers.");
         }
     } else {
