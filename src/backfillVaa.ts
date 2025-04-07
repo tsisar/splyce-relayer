@@ -16,7 +16,7 @@ const endpoints = [
     `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
 ];
 
-const TAG = "backfillVaa";
+const TAG = "BackfillVaa";
 
 async function fetchVAA() {
     for (const url of endpoints) {

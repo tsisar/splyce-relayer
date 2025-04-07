@@ -96,82 +96,83 @@ function delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function resolvePriorityFee(versionedTx: VersionedTransaction): Promise<number> {
+    let priorityFee = await getPriorityFee(versionedTx);
+    log.debug(TAG, "Priority Fee from Helius:", priorityFee);
+
+    if (!priorityFee || priorityFee < DEFAULT_COMPUTE_UNIT_PRICE) {
+        priorityFee = DEFAULT_COMPUTE_UNIT_PRICE;
+        log.debug(TAG, `Using default compute unit price: ${priorityFee}`);
+    } else if (priorityFee > MAX_COMPUTE_UNIT_PRICE) {
+        priorityFee = MAX_COMPUTE_UNIT_PRICE;
+        log.debug(TAG, `Using max compute unit price: ${priorityFee}`);
+    }
+
+    return priorityFee;
+}
+
+async function resolveComputeUnits(
+    provider: AnchorProvider,
+    instructions: TransactionInstruction[],
+    bot: Keypair,
+    lutAccounts: AddressLookupTableAccount[]
+): Promise<number> {
+    const estimatedUnits = await getSimulationComputeUnits(
+        provider.connection,
+        instructions,
+        bot.publicKey,
+        lutAccounts
+    );
+
+    let requiredUnits = estimatedUnits ?? COMPUTE_UNIT_LIMIT;
+    const buffer = requiredUnits * COMPUTE_UNIT_BUFFER;
+    requiredUnits = Math.trunc(requiredUnits + buffer + COMPUTE_UNIT_FOR_BUDGET);
+
+    log.debug(TAG, "Required units:", requiredUnits);
+    return requiredUnits;
+}
+
 export async function sendTransaction(
     provider: AnchorProvider,
     instructions: TransactionInstruction[],
     bot: Keypair,
     lutAccounts: AddressLookupTableAccount[] = [],
 ): Promise<string> {
-    const retries = TRANSACTION_MAX_RETRIES;
-    for (let attempt = 1; attempt <= retries; attempt++) {
+    for (let attempt = 1; attempt <= TRANSACTION_MAX_RETRIES; attempt++) {
         try {
-            // Create signed versioned transaction
             const versionedTx = await createSignedVersionedTransaction(provider, instructions, bot, lutAccounts);
-
-            // Get Helius priority fee
-            let priorityFee = await getPriorityFee(versionedTx);
-            log.debug(TAG, "Priority Fee from Helius:", priorityFee);
-
-            if (priorityFee === null || priorityFee === undefined || priorityFee < DEFAULT_COMPUTE_UNIT_PRICE) {
-                priorityFee = DEFAULT_COMPUTE_UNIT_PRICE;
-                log.debug(TAG, `Using default compute unit price: ${priorityFee}`);
-            } else if (priorityFee > MAX_COMPUTE_UNIT_PRICE) {
-                priorityFee = MAX_COMPUTE_UNIT_PRICE;
-                log.debug(TAG, `Using max compute unit price: ${priorityFee}`);
-            }
-
-            // Get required compute units
-            const units = await getSimulationComputeUnits(provider.connection, [... instructions], bot.publicKey, lutAccounts);
-
-            let requiredUnits = units ?? COMPUTE_UNIT_LIMIT;
-            let buffer = requiredUnits * COMPUTE_UNIT_BUFFER;
-            requiredUnits = Math.trunc(requiredUnits + buffer + COMPUTE_UNIT_FOR_BUDGET); // Add buffer to the computed units
-            log.debug(TAG, "Required units:", requiredUnits);
-
-            // Get compute budget instructions
+            const priorityFee = await resolvePriorityFee(versionedTx);
+            const requiredUnits = await resolveComputeUnits(provider, instructions, bot, lutAccounts);
             const computeBudgetInstructions = await getComputeBudgetInstructions(priorityFee, requiredUnits);
 
-            // Combine compute budget instructions with the original instructions
             const finalInstructions = [...computeBudgetInstructions, ...instructions];
-
-            // Create signed versioned transaction with compute budget instructions
             const finalVersionedTx = await createSignedVersionedTransaction(provider, finalInstructions, bot, lutAccounts);
 
-            // Simulate transaction
-            if (SIMULATE_TRANSACTION){
+            if (SIMULATE_TRANSACTION) {
                 await simulateTransaction(provider, finalVersionedTx);
             }
 
-            // Send and confirm transaction
             const signature = await provider.sendAndConfirm(finalVersionedTx);
             log.debug(TAG, "Transaction confirmed:", signature);
 
-            // Get transaction meta (fee and compute units)
             const transactionMeta = await getTransactionMeta(provider, signature);
-            if (transactionMeta !== null) {
+            if (transactionMeta) {
                 log.debug(TAG, `Fee: ${transactionMeta.fee} SOL, Units consumed: ${transactionMeta.units}`);
-            } else {
-                log.debug(TAG, `Transaction details not found, signature: ${signature}`);
             }
 
             return signature;
         } catch (err: any) {
             if (err instanceof TransactionExpiredTimeoutError) {
-                console.warn(
-                    `Transaction attempt ${attempt} failed with TransactionExpiredTimeoutError. Checking status...`
-                );
-
-                const txStatus = await provider.connection.getSignatureStatus(err.signature);
-
-                if (txStatus?.value?.confirmationStatus === "confirmed") {
-                    log.debug(TAG, "Transaction was actually confirmed:", err.signature);
+                const status = await provider.connection.getSignatureStatus(err.signature);
+                if (status?.value?.confirmationStatus === "confirmed") {
+                    log.debug(TAG, "Transaction actually confirmed:", err.signature);
                     return err.signature;
-                } else if (attempt === retries) {
+                }
+                if (attempt === TRANSACTION_MAX_RETRIES) {
                     log.error(TAG, "Max retries reached. Transaction failed.");
                     throw new Error("Transaction failed after maximum retries.");
                 }
-
-                log.debug(TAG, `Retrying transaction... Attempt ${attempt + 1}/${retries}`);
+                log.debug(TAG, `Retrying transaction... Attempt ${attempt + 1}`);
                 await delay(TRANSACTION_RETRY_INTERVAL);
             } else {
                 log.error(TAG, `Transaction attempt ${attempt} failed:`, err);
