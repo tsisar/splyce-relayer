@@ -1,15 +1,10 @@
 import { createClient } from 'redis';
-import * as dotenv from 'dotenv';
-
-dotenv.config();
+import {REDIS_HOST, REDIS_PORT} from "../config/config";
 
 let client: ReturnType<typeof createClient> | null = null;
 
 export async function initRedisClient(): Promise<void> {
     if (client) return;
-
-    const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
-    const REDIS_PORT = process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379;
 
     client = createClient({
         socket: {

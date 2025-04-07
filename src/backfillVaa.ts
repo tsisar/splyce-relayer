@@ -1,13 +1,19 @@
 import axios from 'axios';
 import {processVAA} from "./worker";
 import {log} from "./logger/logger";
+import {CHAIN_ID_SEPOLIA, tryNativeToHexString} from "@certusone/wormhole-sdk";
+import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE, WORMHOLE_RPC_ENDPOINT} from "./config/config";
 
-const emitterChain = 10002; // Sepolia
-const emitterAddress = "db5492265f6038831e89f495670ff909ade94bd9"; // Token Bridge
-const sequence = 4600;
+const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
+//const emitterAddress = "db5492265f6038831e89f495670ff909ade94bd9"; // Token Bridge
+const sequence = 4636;
+const emitterAddress = tryNativeToHexString(
+    ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
+    emitterChain
+); // Token Bridge address in hex
 
 const endpoints = [
-    `https://api.testnet.wormholescan.io/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
+    `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
 ];
 
 const TAG = "backfillVaa";
@@ -16,7 +22,7 @@ async function fetchVAA() {
     for (const url of endpoints) {
         try {
             log.debug(TAG, `Fetching VAA from ${url}`);
-            const res = await axios.get(url, { timeout: 5000 });
+            const res = await axios.get(url, {timeout: 5000});
 
             let base64: string | null = null;
 
@@ -27,6 +33,7 @@ async function fetchVAA() {
             if (base64) {
                 log.debug(TAG, "base64 data:", base64);
 
+                // PROCESS VAA
                 await processVAA(base64);
 
                 return base64;

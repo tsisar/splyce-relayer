@@ -1,9 +1,79 @@
 import * as dotenv from "dotenv";
+import * as fs from "node:fs";
 
 dotenv.config();
 
-export const PRIVATE_KEY = process.env.PRIVATE_KEY
+// const rawIdl = fs.readFileSync("../idl/wormhole_relayer.json", "utf-8");
+// const idl = JSON.parse(rawIdl);
+//
+// export const WORMHOLE_RELAYER = idl.address;
 
-export const SOLANA_RPC_ENDPOINT = "https://api.devnet.solana.com";
-export const CONFIRM_TIMEOUT = 15000;
-export const PRODUCTION = false;
+export const WORMHOLE_RELAYER = "8vf4LsW4saqaGVJNj1mZNYX88ojp9hYc1EEnwCHWHCGa";
+
+export const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.testnet.wormholescan.io";
+
+export const SPY_HOST = process.env.SPY_HOST || "localhost";
+export const SPY_PORT = process.env.SPY_PORT ? Number(process.env.SPY_PORT) : 7073;
+
+export const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
+export const REDIS_PORT = process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379;
+
+export const PRODUCTION = process.env.ENVIRONMENT === "prod" || false;
+
+export const PRIVATE_KEY = process.env.PRIVATE_KEY
+export const SOLANA_RPC_ENDPOINT = process.env.SOLANA_RPC_ENDPOINT || "https://api.devnet.solana.com";
+export const PRIORITY_LEVEL = process.env.PRIORITY_LEVEL || "Medium";
+export const CONFIRM_TIMEOUT = parseInt(process.env.CONFIRM_TRANSACTION_INITIAL_TIMEOUT || "30000");
+export const DEFAULT_COMPUTE_UNIT_PRICE = parseInt(process.env.COMPUTE_UNIT_PRICE || "1000");
+export const MAX_COMPUTE_UNIT_PRICE = parseInt(process.env.MAX_COMPUTE_UNIT_PRICE || "1000000");
+export const COMPUTE_UNIT_LIMIT = parseInt(process.env.COMPUTE_UNIT_LIMIT || "200000");
+export const COMPUTE_UNIT_BUFFER = parseFloat(process.env.COMPUTE_UNIT_BUFFER || "0.1");
+export const TRANSACTION_MAX_RETRIES = parseInt(process.env.TRANSACTION_MAX_RETRIES || "3");
+export const TRANSACTION_RETRY_INTERVAL = parseInt(process.env.TRANSACTION_RETRY_INTERVAL || "5000");
+export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION === "true" || true;
+
+// Constants DEV
+export const ACCOUNTANT = "EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7"
+export const SOLANA_CORE_BRIDGE = "3u8hJUVTA4jH1wYAyUur7FFZVQ8H635K3tSHHF4ssjQ5"
+
+// TOKEN_BRIDGES DEV
+export const SOLANA_TOKEN_BRIDGE = "DZnkkTmCiFWfYTfT41X3Rd1kDgozqzxWaHqsw6W4x2oe"
+export const ETHEREUM_HOLESKY_TOKEN_BRIDGE = "0x76d093BbaE4529a342080546cAFEec4AcbA59EC6";
+export const ETHEREUM_SEPOLIA_TOKEN_BRIDGE = "0xDB5492265f6038831E89f495670FF909aDe94bd9";
+export const ACALA_TOKEN_BRIDGE = "0xe157115ef34c93145Fec2FE53706846853B07F42";
+export const ALGORAND_TOKEN_BRIDGE = "86525641";
+export const APTOS_TOKEN_BRIDGE = "0x576410486a2da45eee6c949c995670112ddf2fbeedab20350d506328eefc9d4f";
+export const ARBITRUM_SEPOLIA_TOKEN_BRIDGE = "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e";
+export const AVALANCHE_TOKEN_BRIDGE = "0x61E44E506Ca5659E6c0bba9b678586fA2d729756";
+export const BASE_SEPOLIA_TOKEN_BRIDGE = "0x86F55A04690fd7815A3D802bD587e83eA888B239";
+export const BERACHAIN_TOKEN_BRIDGE = "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a";
+export const BLAST_TOKEN_BRIDGE = "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2";
+export const BNB_SMART_CHAIN_TOKEN_BRIDGE = "0x9dcF9D205C9De35334D646BeE44b2D2859712A09";
+export const CELO_TOKEN_BRIDGE = "0x05ca6037eC51F8b712eD2E6Fa72219FEaE74E153";
+export const FANTOM_TOKEN_BRIDGE = "0x599CEa2204B4FaECd584Ab1F2b6aCA137a0afbE8";
+export const HYPEREVM_TOKEN_BRIDGE = "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78";
+export const INJECTIVE_TOKEN_BRIDGE = "inj1q0e70vhrv063eah90mu97sazhywmeegp7myvnh";
+export const INK_TOKEN_BRIDGE = "0x376428e7f26D5867e69201b275553C45B09EE090";
+export const KAIA_TOKEN_BRIDGE = "0xC7A13BE098720840dEa132D860fDfa030884b09A";
+export const KARURA_TOKEN_BRIDGE = "0xe157115ef34c93145Fec2FE53706846853B07F42";
+export const LINEA_TOKEN_BRIDGE = "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e";
+export const MANTLE_TOKEN_BRIDGE = "0x75Bfa155a9D7A3714b0861c8a8aF0C4633c45b5D";
+export const MONAD_TOKEN_BRIDGE = "0xF323dcDe4d33efe83cf455F78F9F6cc656e6B659";
+export const MOONBEAM_TOKEN_BRIDGE = "0xbc976D4b9D57E57c3cA52e1Fd136C45FF7955A96";
+export const MOVEMENT_TOKEN_BRIDGE = "0xda075f9cb681e291c17e65562bdd6d4196c7d2f86da1aa3917f2809ff8edb03d";
+export const NEAR_TOKEN_BRIDGE = "token.wormhole.testnet";
+export const NEON_TOKEN_BRIDGE = "0xEe3dB83916Ccdc3593b734F7F2d16D630F39F1D0";
+export const OASIS_TOKEN_BRIDGE = "0x88d8004A9BdbfD9D28090A02010C19897a29605c";
+export const OPTIMISM_SEPOLIA_TOKEN_BRIDGE = "0x99737Ec4B815d816c49A385943baf0380e75c0Ac";
+export const POLYGON_AMOY_TOKEN_BRIDGE = "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e";
+export const SCROLL_TOKEN_BRIDGE = "0x22427d90B7dA3fA4642F7025A854c7254E4e45BF";
+export const SEI_TOKEN_BRIDGE = "sei1jv5xw094mclanxt5emammy875qelf3v62u4tl4lp5nhte3w3s9ts9w9az2";
+export const SEIEVM_TOKEN_BRIDGE = "0x23908A62110e21C04F3A4e011d24F901F911744A";
+export const SNAXCHAIN_TOKEN_BRIDGE = "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a";
+export const SUI_TOKEN_BRIDGE = "0x6fb10cdb7aa299e9a4308752dadecb049ff55a892de92992a1edbd7912b3d6da";
+export const TERRA_TOKEN_BRIDGE = "terra1pseddrv0yfsn76u4zxrjmtf45kdlmalswdv39a";
+export const TERRA2_TOKEN_BRIDGE = "terra1c02vds4uhgtrmcw7ldlg75zumdqxr8hwf7npseuf2h58jzhpgjxsgmwkvk";
+export const UNICHAIN_TOKEN_BRIDGE = "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a";
+export const WORLD_CHAIN_TOKEN_BRIDGE = "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2";
+export const X_LAYER_TOKEN_BRIDGE = "0xdA91a06299BBF302091B053c6B9EF86Eff0f930D";
+export const XPLA_TOKEN_BRIDGE = "xpla1kek6zgdaxcsu35nqfsyvs2t9vs87dqkkq6hjdgczacysjn67vt8sern93x";

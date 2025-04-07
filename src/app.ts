@@ -4,27 +4,31 @@ import {
     StandardRelayerContext,
     Middleware,
 } from "@wormhole-foundation/relayer-engine";
-import {CHAIN_ID_OPTIMISM, TokenBridgePayload} from "@certusone/wormhole-sdk";
-import * as dotenv from "dotenv";
 import {
     CHAIN_ID_SOLANA,
     CHAIN_ID_SEPOLIA,
     CHAIN_ID_ARBITRUM,
+    CHAIN_ID_OPTIMISM,
+    ChainId,
 } from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
-import { getRedisClient, initRedisClient } from "./redisClient";
-import { hexToSolanaBase58 } from "./utils";
+import { tryHexToNativeString } from "@certusone/wormhole-sdk/lib/cjs/utils/array";
+import { TokenBridgePayload } from "@certusone/wormhole-sdk";
+import { getRedisClient, initRedisClient } from "./redis/redisClient";
 import { processVAA } from "./worker";
-
-dotenv.config();
-
-const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.testnet.wormholescan.io";
-const SPY_HOST = process.env.SPY_HOST || "localhost";
-const SPY_PORT = process.env.SPY_PORT ? Number(process.env.SPY_PORT) : 7073;
+import {
+    ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
+    ARBITRUM_SEPOLIA_TOKEN_BRIDGE,
+    OPTIMISM_SEPOLIA_TOKEN_BRIDGE,
+    SPY_HOST,
+    SPY_PORT,
+    WORMHOLE_RELAYER,
+    WORMHOLE_RPC_ENDPOINT
+} from "./config/config";
 
 const EMITTERS = [
-    { chainId: CHAIN_ID_SEPOLIA, address: "0xDB5492265f6038831E89f495670FF909aDe94bd9" },
-    { chainId: CHAIN_ID_ARBITRUM, address: "0xC7A204bDBFe983FCD8d8E61D02b475D4073fF97e" },
-    { chainId: CHAIN_ID_OPTIMISM, address: "0x99737Ec4B815d816c49A385943baf0380e75c0Ac" },
+    { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
+    { chainId: CHAIN_ID_ARBITRUM, address: ARBITRUM_SEPOLIA_TOKEN_BRIDGE },
+    { chainId: CHAIN_ID_OPTIMISM, address: OPTIMISM_SEPOLIA_TOKEN_BRIDGE },
 ];
 
 (async function main() {
@@ -34,17 +38,17 @@ const EMITTERS = [
     const app = new StandardRelayerApp<StandardRelayerContext>(
         Environment.TESTNET,
         {
-            name: `SplyceRelayerMultiChain`,
+            name: `Splyce_Relayer_Solana`,
             spyEndpoint: `${SPY_HOST}:${SPY_PORT}`,
-            //wormholeRpcs: [WORMHOLE_RPC_ENDPOINT],
+            wormholeRpcs: [WORMHOLE_RPC_ENDPOINT],
         },
     );
 
     // Middleware: filter TransferWithPayload to Solana & specific receiver
     const onlyTransferWithPayload: Middleware<StandardRelayerContext> = async (ctx, next) => {
         const payloadType = ctx.tokenBridge?.payload?.payloadType;
-        const toChain = ctx.tokenBridge?.payload?.toChain;
-        const receiver = hexToSolanaBase58(ctx.tokenBridge?.payload?.to.toString("hex"));
+        const toChain = ctx.tokenBridge?.payload?.toChain as ChainId;
+        const receiver = tryHexToNativeString(ctx.tokenBridge?.payload?.to.toString("hex"), toChain);
 
         if (payloadType !== TokenBridgePayload.TransferWithPayload) {
             ctx.logger.debug(`Filtered out payload type: ${payloadType}`);
@@ -56,7 +60,7 @@ const EMITTERS = [
             return;
         }
 
-        if (receiver !== "8vf4LsW4saqaGVJNj1mZNYX88ojp9hYc1EEnwCHWHCGa") {
+        if (receiver !== WORMHOLE_RELAYER) {
             ctx.logger.debug(`Filtered out receiver: ${receiver}`);
             return;
         }
@@ -64,11 +68,14 @@ const EMITTERS = [
         return next();
     };
 
-    //app.use(onlyTransferWithPayload);
+    app.use(onlyTransferWithPayload);
 
     for (const { chainId, address } of EMITTERS) {
         app.chain(chainId).address(address, async (ctx, next) => {
-            ctx.logger.info(`VAA from chain ${chainId}, seq ${ctx.vaa?.sequence}`);
+            const vaa = ctx.vaa;
+            const hash = ctx.sourceTxHash;
+
+            ctx.logger.info(`VAA from chain ${chainId}, seq ${vaa?.sequence}`);
 
             const { payload } = ctx.tokenBridge!;
 
@@ -77,24 +84,25 @@ const EMITTERS = [
                 `\tToken: ${payload.tokenChain}:${payload.tokenAddress.toString("hex")}\n` +
                 `\tAmount: ${payload.amount}\n` +
                 `\tSender: ${payload.fromAddress?.toString("hex")}\n` +
-                `\tReceiver: ${payload.toChain}:${hexToSolanaBase58(payload.to.toString("hex"))}\n` +
-                `\tPayload: ${payload.tokenTransferPayload.toString("hex")}\n`,
+                `\tReceiver: ${payload.toChain}:${tryHexToNativeString(payload.to.toString("hex"), payload.toChain as ChainId)}\n` +
+                `\tPayload: ${payload.tokenTransferPayload.toString("hex")}\n` +
+                `\tTxHash: ${hash}\n`,
             );
 
             // Store in Redis as JSON
-            const emitterChain = ctx.vaa!.emitterChain;
-            const emitterAddress = ctx.vaa!.emitterAddress.toString("hex");
-            const sequence = ctx.vaa!.sequence;
+            const emitterChain = vaa!.emitterChain;
+            const emitterAddress = vaa!.emitterAddress.toString("hex");
+            const sequence = vaa!.sequence;
             const key = `vaa:${emitterChain}:${emitterAddress}:${sequence}`;
 
             const redisValue = JSON.stringify({
-                vaa: ctx.vaa!.bytes.toString("base64"),
+                vaa: vaa!.bytes.toString("base64"),
             });
 
             await redis.set(key, redisValue);
             ctx.logger.info(`Saved VAA as JSON to Redis with key: ${key}`);
 
-            await processVAA(ctx.vaa!.bytes.toString("base64"));
+            await processVAA(vaa!.bytes.toString("base64"));
             next();
         });
     }
