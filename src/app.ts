@@ -13,7 +13,6 @@ import {
 } from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
 import { tryHexToNativeString } from "@certusone/wormhole-sdk/lib/cjs/utils/array";
 import { TokenBridgePayload } from "@certusone/wormhole-sdk";
-import { getRedisClient, initRedisClient } from "./redis/redisClient";
 import { processVAA } from "./worker";
 import {
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
@@ -22,8 +21,10 @@ import {
     SPY_HOST,
     SPY_PORT,
     WORMHOLE_RELAYER,
-    WORMHOLE_RPC_ENDPOINT
+    WORMHOLE_RPC_ENDPOINT, REDIS_HOST, REDIS_PORT
 } from "./config/config";
+import {initPgStorage} from "../pg-storage/client";
+import {getLatestSequence, saveVaaToPostgres} from "../pg-storage";
 
 const EMITTERS = [
     { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
@@ -32,8 +33,7 @@ const EMITTERS = [
 ];
 
 (async function main() {
-    await initRedisClient();
-    const redis = getRedisClient();
+    await initPgStorage();
 
     const app = new StandardRelayerApp<StandardRelayerContext>(
         Environment.TESTNET,
@@ -41,6 +41,10 @@ const EMITTERS = [
             name: `Splyce_Relayer_Solana`,
             spyEndpoint: `${SPY_HOST}:${SPY_PORT}`,
             wormholeRpcs: [WORMHOLE_RPC_ENDPOINT],
+            redis: {
+                host: REDIS_HOST,
+                port: REDIS_PORT,
+            },
         },
     );
 
@@ -92,17 +96,13 @@ const EMITTERS = [
             // Store in Redis as JSON
             const emitterChain = vaa!.emitterChain;
             const emitterAddress = vaa!.emitterAddress.toString("hex");
-            const sequence = vaa!.sequence;
-            const key = `vaa:${emitterChain}:${emitterAddress}:${sequence}`;
+            const sequence = vaa!.sequence.toString();
+            const vaaBase64 = vaa!.bytes.toString("base64");
 
-            const redisValue = JSON.stringify({
-                vaa: vaa!.bytes.toString("base64"),
-            });
+            await saveVaaToPostgres(emitterChain, emitterAddress, sequence, vaaBase64);
+            ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
-            await redis.set(key, redisValue);
-            ctx.logger.info(`Saved VAA as JSON to Redis with key: ${key}`);
-
-            await processVAA(vaa!.bytes.toString("base64"));
+            await processVAA(vaaBase64);
             next();
         });
     }

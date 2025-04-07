@@ -23,6 +23,7 @@
     "koa": "^2.14.1",
     "koa-router": "^12.0.0",
     "node-redis": "^0.1.7",
+    "pg": "^8.14.1",
     "redis": "^4.7.0",
     "typescript": "^5.1.6",
     "undici": "^7.7.0",
@@ -34,6 +35,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/koa-router": "^7.4.4",
+    "@types/pg": "^8.11.11",
     "@types/winston": "^2.4.4",
     "@types/yargs": "^17.0.22",
     "ganache": "^7.8.0",

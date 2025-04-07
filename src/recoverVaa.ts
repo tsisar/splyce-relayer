@@ -3,6 +3,7 @@ import {processVAA} from "./worker";
 import {log} from "./logger/logger";
 import {CHAIN_ID_SEPOLIA, tryNativeToHexString} from "@certusone/wormhole-sdk";
 import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE, WORMHOLE_RPC_ENDPOINT} from "./config/config";
+import {getLatestSequence} from "../pg-storage";
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
 //const emitterAddress = "db5492265f6038831e89f495670ff909ade94bd9"; // Token Bridge
@@ -19,6 +20,9 @@ const endpoints = [
 const TAG = "BackfillVaa";
 
 async function fetchVAA() {
+    const latestSequence: string | null = await getLatestSequence(emitterChain, emitterAddress);
+    log.info(TAG, `Latest saved sequence for ${emitterChain}/${emitterAddress}: ${latestSequence}`);
+
     for (const url of endpoints) {
         try {
             log.debug(TAG, `Fetching VAA from ${url}`);

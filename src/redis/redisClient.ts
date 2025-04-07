@@ -1,5 +1,8 @@
 import { createClient } from 'redis';
 import {REDIS_HOST, REDIS_PORT} from "../config/config";
+import {log} from "../logger/logger";
+
+const TAG = "Redis";
 
 let client: ReturnType<typeof createClient> | null = null;
 
