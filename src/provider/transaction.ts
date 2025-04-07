@@ -49,14 +49,6 @@ async function getComputeBudgetInstructions(
     priorityFee: number,
     requiredUnits: number
 ): Promise<TransactionInstruction[]> {
-    // const computedFeeLamports = (priorityFee * requiredUnits) / 1e6;
-    // const totalFeeLamports = computedFeeLamports + TRANSACTION_FEE;
-    //
-    // if (userFee !== 0 && userFee < totalFeeLamports) {
-    //     log.error(TAG, `User fee (${userFee} lamports) is less than the required total priority fee (${totalFeeLamports} lamports). Transaction failed.`);
-    //     throw new Error("User fee is less than the total required priority fee.");
-    // }
-
     return [
         ComputeBudgetProgram.setComputeUnitLimit({ units: requiredUnits }),
         ComputeBudgetProgram.setComputeUnitPrice({ microLamports: priorityFee }),

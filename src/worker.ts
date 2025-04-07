@@ -86,7 +86,7 @@ async function postVaaOnSolana(
     coreBridge: PublicKey,
     signedMsg: Buffer
 ): Promise<string[]> {
-    log.debug(TAG, "---------------------------------------------------------");
+    console.log("---------------------------------------------------------");
     log.debug(TAG, "Post Vaa On Solana...");
 
     const wallet = NodeWallet.fromSecretKey(payer.secretKey);
@@ -109,7 +109,7 @@ async function buildReceiveInstruction(
     tokenBridgeWrappedMint:
     PublicKey
 ): Promise<TransactionInstruction> {
-    log.debug(TAG, "---------------------------------------------------------");
+    console.log("---------------------------------------------------------");
     log.debug(TAG, "Build Receive Instruction...");
 
     const tokenBridgeClaim = deriveClaimKey(
@@ -147,7 +147,7 @@ async function buildReceiveInstruction(
 }
 
 async function buildExecuteDepositInstruction(wormholeProgram: Program<WormholeRelayer>, parsedVaa: ParsedVaa, tokenBridgeWrappedMint: PublicKey, recipient: PublicKey, vault: PublicKey): Promise<TransactionInstruction> {
-    log.debug(TAG, "---------------------------------------------------------");
+    console.log("---------------------------------------------------------");
     log.debug(TAG, "Build ExecuteDeposit Instruction...");
 
     const [depositPDA] = PublicKey.findProgramAddressSync(
@@ -223,7 +223,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     // Post the VAA on chain.
     try {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
-        log.debug(TAG, "Receive:", signatures.join(", "));
+        log.debug(TAG, "PostVaaOnSolana tx:", signatures.join(", "));
     } catch (e) {
         log.error(TAG, e);
         process.exit(1);
@@ -251,7 +251,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     try {
         const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
         const signature1 = await sendTransaction(provider, [instruction1], payer);
-        log.debug(TAG, "Receive tx1:", signature1);
+        log.debug(TAG, "Receive tx:", signature1);
     } catch (error) {
         log.error(TAG, "Unexpected error in receive:", error);
         process.exit(1);
@@ -260,7 +260,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     try {
         const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
         const signature2 = await sendTransaction(provider, [instruction2], payer);
-        log.debug(TAG, "ExecuteDeposit tx2:", signature2);
+        log.debug(TAG, "ExecuteDeposit tx:", signature2);
     } catch (error) {
         log.error(TAG, "Unexpected error in executeDeposit:", error);
         process.exit(1);

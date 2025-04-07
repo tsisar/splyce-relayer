@@ -22,6 +22,6 @@ export class log {
 
     static error(TAG: string, message: string, obj?: any): void {
         const prefix = this.formatPrefix("ERROR", TAG);
-        obj ? log.error(TAG, prefix, message, obj) : log.error(TAG, prefix, message);
+        obj ? console.error(prefix, message, obj) : console.error(prefix, message);
     }
 }

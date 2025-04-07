@@ -1,7 +1,9 @@
 import { VersionedTransaction } from "@solana/web3.js";
 import bs58 from "bs58";
 import * as config from "../config/config";
+import {log} from "../logger/logger";
 
+const TAG = "Helius";
 let avgPriorityFee = 0;
 
 type HeliusPriorityFeeResponse = {

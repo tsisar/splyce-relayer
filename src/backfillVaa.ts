@@ -6,7 +6,7 @@ import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE, WORMHOLE_RPC_ENDPOINT} from "./config/con
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
 //const emitterAddress = "db5492265f6038831e89f495670ff909ade94bd9"; // Token Bridge
-const sequence = 4636;
+const sequence = 4637;
 const emitterAddress = tryNativeToHexString(
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
     emitterChain
