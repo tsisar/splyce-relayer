@@ -14,46 +14,102 @@ import { tryHexToNativeString } from "@certusone/wormhole-sdk/lib/cjs/utils/arra
 import { TokenBridgePayload } from "@certusone/wormhole-sdk";
 import { processVaa } from "./worker";
 import {
-    ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
-    BNB_SMART_CHAIN_TOKEN_BRIDGE,
     SPY_HOST,
     SPY_PORT,
     WORMHOLE_RELAYER,
     WORMHOLE_RPC_ENDPOINT,
     REDIS_HOST,
-    REDIS_PORT
+    REDIS_PORT, getStartingSequenceConfig,
 } from "./config/config";
 import { initPgStorage } from "./pg-storage/client";
 import { saveVaaToPostgres } from "./pg-storage/vaa";
+import {
+    BNB_SMART_CHAIN_TOKEN_BRIDGE,
+    ETHEREUM_SEPOLIA_TOKEN_BRIDGE
+} from "./config/constants";
 
 const EMITTERS = [
     { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
     { chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
 ];
 
-// Middleware: filter TransferWithPayload to Solana & specific receiver
 const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
-    const payloadType = ctx.tokenBridge?.payload?.payloadType;
-    const toChain = ctx.tokenBridge?.payload?.toChain as ChainId;
-    const toAddress = ctx.tokenBridge?.payload?.to.toString() as string;
-    const receiver = tryHexToNativeString(toAddress, toChain);
+    const payload = ctx.tokenBridge?.payload;
 
+    if (!payload) {
+        ctx.logger.warn("TokenBridge payload is missing");
+        return;
+    }
+
+    const payloadType = payload.payloadType;
     if (payloadType !== TokenBridgePayload.TransferWithPayload) {
         ctx.logger.debug(`Filtered out payload type: ${payloadType}`);
         return;
     }
 
-    if (toChain !== CHAIN_ID_SOLANA) {
-        ctx.logger.debug(`Filtered out toChain: ${toChain}`);
+    const to = payload.to;
+    const toChain = payload.toChain;
+
+    if (!to || toChain === undefined) {
+        ctx.logger.warn("Missing 'to' or 'toChain' in payload");
+        return;
+    }
+
+    const toChainTyped = toChain as ChainId;
+    const toAddressHex = to.toString("hex");
+
+    let receiver: string;
+    try {
+        receiver = tryHexToNativeString(toAddressHex, toChainTyped);
+    } catch (e) {
+        ctx.logger.error(`Failed to convert address for chain ${toChain}: ${e}`);
+        return;
+    }
+
+    if (toChainTyped !== CHAIN_ID_SOLANA) {
+        ctx.logger.debug(`Filtered out toChain: ${toChainTyped}`);
         return;
     }
 
     if (receiver !== WORMHOLE_RELAYER) {
         ctx.logger.debug(`Filtered out receiver: ${receiver}`);
+        ctx.logger.debug(`Expected: ${WORMHOLE_RELAYER}, got: ${receiver}`);
         return;
     }
 
     return next();
+};
+
+const logVaaDetails = (ctx: StandardRelayerContext): void => {
+    const { vaa, tokenBridge, sourceTxHash } = ctx;
+
+    if (!vaa || !tokenBridge?.payload) {
+        ctx.logger.warn("Missing VAA or tokenBridge payload, skipping detailed logging");
+        return;
+    }
+
+    const payload = tokenBridge.payload;
+
+    const token = `${payload.tokenChain}:${payload.tokenAddress.toString("hex")}`;
+    const amount = payload.amount;
+    const sender = payload.fromAddress?.toString("hex");
+    const receiverAddress = payload.to.toString("hex");
+    const receiver = tryHexToNativeString(receiverAddress, payload.toChain as ChainId);
+    const target = `${payload.toChain}:${receiver}`;
+    const txHash = sourceTxHash;
+
+    ctx.logger.info(`VAA received — chain: ${vaa.emitterChain}, seq: ${vaa.sequence}`);
+    ctx.logger.info(
+        [
+            `TransferWithPayload Details:`,
+            `  • Token:   ${token}`,
+            `  • Amount:  ${amount}`,
+            `  • Sender:  ${sender}`,
+            `  • Receiver:${target}`,
+            `  • Payload: ${payload.tokenTransferPayload.toString("hex")}`,
+            `  • TxHash:  ${txHash}`,
+        ].join("\n")
+    );
 };
 
 (async function main() {
@@ -63,49 +119,44 @@ const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
         Environment.TESTNET,
         {
             name: `splyce-relayer-solana`,
-            spyEndpoint: `${SPY_HOST}:${SPY_PORT}`,
-            wormholeRpcs: [WORMHOLE_RPC_ENDPOINT],
+            spyEndpoint: `${SPY_HOST}:${SPY_PORT}`, // Endpoint for Wormhole Spy to receive live VAAs
+            wormholeRpcs: [WORMHOLE_RPC_ENDPOINT], // Wormhole RPC endpoints used to fetch VAAs (especially for backfill)
+            // Redis configuration used for seenVaas, missedVaas tracking, and BullMQ job queues
             redis: {
                 host: REDIS_HOST,
                 port: REDIS_PORT,
             },
-            maxCompletedQueueSize: 0, // не зберігати успішні jobs
-            maxFailedQueueSize: 100, // зберігати лише останні 100 помилок (опційно)
-        },
+            maxCompletedQueueSize: 0, // Limit how many successfully processed jobs are stored in Redis (0 = don't keep)
+            maxFailedQueueSize: 100,  // Limit how many failed jobs are stored in Redis (for diagnostics)
+            // Configuration for the missed VAA recovery worker (backfill logic)
+            missedVaaOptions: {
+                concurrency: 4,  // Number of concurrent missed VAA processing jobs
+                checkInterval: 15000, // Interval (ms) between checks for missed VAAs
+                fetchVaaRetries: 3, // How many times to retry fetching a missed VAA
+                vaasFetchConcurrency: 4, // Number of VAA fetches to run in parallel
+                // Explicit starting sequence for each emitter if no seenVaas exist in Redis
+                startingSequenceConfig: getStartingSequenceConfig(),
+            },
+        }
     );
 
     app.use(filter);
 
     for (const { chainId, address } of EMITTERS) {
         app.chain(chainId).address(address, async (ctx, next) => {
-            const vaa = ctx.vaa;
-            const hash = ctx.sourceTxHash;
+            logVaaDetails(ctx);
 
-            ctx.logger.info(`VAA from chain ${chainId}, seq ${vaa?.sequence}`);
-
-            const { payload } = ctx.tokenBridge!;
-
-            ctx.logger.info(
-                `TransferWithPayload processing for: \n` +
-                `\tToken: ${payload?.tokenChain}:${payload?.tokenAddress.toString("hex")}\n` +
-                `\tAmount: ${payload?.amount}\n` +
-                `\tSender: ${payload?.fromAddress?.toString("hex")}\n` +
-                `\tReceiver: ${payload?.toChain}:${tryHexToNativeString(payload?.to.toString("hex") as string, payload?.toChain as ChainId)}\n` +
-                `\tPayload: ${payload?.tokenTransferPayload.toString("hex")}\n` +
-                `\tTxHash: ${hash}\n`,
-            );
-
-            // Store in Redis as JSON
-            const emitterChain = vaa!.emitterChain;
-            const emitterAddress = vaa!.emitterAddress.toString("hex");
-            const sequence = vaa!.sequence.toString();
-            const vaaBase64 = vaa!.bytes.toString("base64");
+            const vaa = ctx.vaa!;
+            const vaaBase64 = vaa.bytes.toString("base64");
+            const emitterAddress = vaa.emitterAddress.toString("hex");
+            const sequence = vaa.sequence.toString();
+            const emitterChain = vaa.emitterChain;
 
             await saveVaaToPostgres(emitterChain, emitterAddress, sequence, vaaBase64);
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
             await processVaa(vaaBase64);
-            next();
+            return next();
         });
     }
 

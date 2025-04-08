@@ -1,5 +1,5 @@
 import {Connection, Keypair, PublicKey, TransactionInstruction} from "@solana/web3.js";
-import {ACCOUNTANT, SOLANA_CORE_BRIDGE, PRIVATE_KEY, SOLANA_TOKEN_BRIDGE, WORMHOLE_RELAYER} from "./config/config";
+import {ACCOUNTANT, PRIVATE_KEY, WORMHOLE_RELAYER} from "./config/config";
 import {Manager} from "./provider/manager"
 import {
     getIsTransferCompletedSolana, ParsedVaa,
@@ -28,6 +28,7 @@ import {tryHexToNativeString} from "@certusone/wormhole-sdk/lib/cjs/utils/array"
 import {sendTransaction} from "./provider/transaction";
 import {WormholeRelayer} from "./types/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
+import {SOLANA_CORE_BRIDGE, SOLANA_TOKEN_BRIDGE} from "./config/constants";
 
 const TAG = "Worker";
 
@@ -225,8 +226,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
         log.debug(TAG, "PostVaaOnSolana tx:", signatures.join(", "));
     } catch (e) {
-        console.log(e);
-        process.exit(1);
+        throw new Error(`postVaaOnSolana failed: ${e instanceof Error ? e.message : String(e)}`);
     }
 
     const tokenBridgeWrappedMint = deriveWrappedMintKey(
@@ -253,8 +253,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         const signature1 = await sendTransaction(provider, [instruction1], payer);
         log.debug(TAG, "Receive tx:", signature1);
     } catch (error) {
-        log.error(TAG, "Unexpected error in receive:", error);
-        process.exit(1);
+        throw new Error(`Receive failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     try {
@@ -262,8 +261,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         const signature2 = await sendTransaction(provider, [instruction2], payer);
         log.debug(TAG, "ExecuteDeposit tx:", signature2);
     } catch (error) {
-        log.error(TAG, "Unexpected error in executeDeposit:", error);
-        process.exit(1);
+        throw new Error(`ExecuteDeposit failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 }
 
@@ -292,25 +290,14 @@ function getBotKeypair(): Keypair {
     return Keypair.fromSecretKey(Uint8Array.from(privateKeyArray));
 }
 
-export async function processVaa(vaa: string) {
-    const payer = getBotKeypair()
-
-    // Set up the manager.
+export async function processVaa(vaa: string): Promise<void> {
+    const payer = getBotKeypair();
     const manager = new Manager(payer);
 
-    // Relay VAA.
-    await relay(manager, payer, vaa);
+    try {
+        await relay(manager, payer, vaa);
+    } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        throw new Error(`VAA processing failed: ${message}`);
+    }
 }
-
-// async function main() {
-//     const vaa = "AQAAAAABAK506gdY40UmOW3FORVAl5yr4c434TRdf9ITE8nKcPhHAeHIYzEzyEK4dTOGfjsGj+bwKvxGBPeHEapmSPUfkvkAZ+1HMAAAAAAnEgAAAAAAAAAAAAAAANtUkiZfYDiDHon0lWcP+Qmt6UvZAAAAAAAAEgMBAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYagAAAAAAAAAAAAAAAAHH1LGWywx7AddD+8YRapAjeccjgnEnXAn45cglOAqDVoBIbgGnZ+4+0tD6SHqgTkTo38ySojAAEAAAAAAAAAAAAAAADvtkQVkNqb+N1bKvFA5LH0j6fsDAHfAg8xynlUN7+nNlSUp4oN5SUJgHH9VUQPmhoGPxA1rdiu9jRatWfUj6hPw1Hhsmz/NXeoz0Zj0pHwZHgVBLSf";
-//
-//     const payer = getBotKeypair()
-//
-//     // Set up the manager.
-//     const manager = new Manager(payer);
-//
-//     // Relay VAA.
-//     await relay(manager, payer, vaa);
-// }
-// main();

@@ -2,8 +2,9 @@ import axios from 'axios';
 import {processVaa} from "./worker";
 import {log} from "./logger/logger";
 import {CHAIN_ID_SEPOLIA, tryNativeToHexString} from "@certusone/wormhole-sdk";
-import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE, WORMHOLE_RPC_ENDPOINT} from "./config/config";
+import {WORMHOLE_RPC_ENDPOINT} from "./config/config";
 import {getLatestSequence} from "./pg-storage/vaa";
+import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
 const sequence = 4647;
