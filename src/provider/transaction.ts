@@ -138,6 +138,7 @@ export async function sendTransaction(
     bot: Keypair,
     lutAccounts: AddressLookupTableAccount[] = [],
 ): Promise<string> {
+    console.log("---------------------------------------------------------");
     for (let attempt = 1; attempt <= TRANSACTION_MAX_RETRIES; attempt++) {
         try {
             const versionedTx = await createSignedVersionedTransaction(provider, instructions, bot, lutAccounts);

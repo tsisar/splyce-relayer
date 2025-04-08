@@ -7,25 +7,27 @@ export class CustomConsoleTransport extends Transport {
     }
 
     log(info: any, callback: () => void) {
-        const formattedMessage = info[Symbol.for("message")];
+        const originalMessage = info[Symbol.for("message")] as string;
         const level = info[Symbol.for("level")];
         const tag = info.TAG || "Relayer";
 
+        const cleanedMessage = originalMessage.replace(/^(info|debug|warn|error):\s*/, "");
+
         switch (level) {
             case "debug":
-                log.debug(tag, formattedMessage);
+                log.debug(tag, cleanedMessage);
                 break;
             case "info":
-                log.info(tag, formattedMessage);
+                log.info(tag, cleanedMessage);
                 break;
             case "warn":
-                log.warn(tag, formattedMessage);
+                log.warn(tag, cleanedMessage);
                 break;
             case "error":
-                log.error(tag, formattedMessage);
+                log.error(tag, cleanedMessage);
                 break;
             default:
-                console.log(`[${level}] [${tag}] ${formattedMessage}`);
+                console.log(`[${level}] [${tag}] ${cleanedMessage}`);
                 break;
         }
 
