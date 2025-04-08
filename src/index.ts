@@ -28,6 +28,15 @@ import {
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE
 } from "./config/constants";
 
+import winston from "winston";
+import { CustomConsoleTransport } from "./logger/custom-transport";
+
+export const winstonLogger = winston.createLogger({
+    level: "debug",
+    format: winston.format.simple(),
+    transports: [new CustomConsoleTransport()],
+});
+
 const EMITTERS = [
     { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
     { chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
@@ -137,6 +146,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
                 // Explicit starting sequence for each emitter if no seenVaas exist in Redis
                 startingSequenceConfig: getStartingSequenceConfig(),
             },
+            logger: winstonLogger,
         }
     );
 
