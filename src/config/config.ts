@@ -18,6 +18,12 @@ export const SPY_PORT = process.env.SPY_PORT ? Number(process.env.SPY_PORT) : 70
 export const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 export const REDIS_PORT = process.env.REDIS_PORT ? parseInt(process.env.REDIS_PORT) : 6379;
 
+export const POSTGRES_USER = process.env.POSTGRES_USER || "user";
+export const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || "password";
+export const POSTGRES_DB = process.env.POSTGRES_DB || "relayer-db";
+export const POSTGRES_HOST = process.env.POSTGRES_HOST || "postgres";
+export const POSTGRES_PORT = Number(process.env.POSTGRES_PORT) || 5432;
+
 export const PRODUCTION = process.env.ENVIRONMENT === "prod" || false;
 
 export const PRIVATE_KEY = process.env.PRIVATE_KEY
@@ -77,3 +83,18 @@ export const UNICHAIN_TOKEN_BRIDGE = "0xa10f2eF61dE1f19f586ab8B6F2EbA89bACE63F7a
 export const WORLD_CHAIN_TOKEN_BRIDGE = "0x430855B4D43b8AEB9D2B9869B74d58dda79C0dB2";
 export const X_LAYER_TOKEN_BRIDGE = "0xdA91a06299BBF302091B053c6B9EF86Eff0f930D";
 export const XPLA_TOKEN_BRIDGE = "xpla1kek6zgdaxcsu35nqfsyvs2t9vs87dqkkq6hjdgczacysjn67vt8sern93x";
+
+
+const HIDDEN_KEYS = [
+    "PRIVATE_KEY",
+    "POSTGRES_PASSWORD",
+];
+
+console.log("Loaded ENV variables:");
+Object.entries(process.env).forEach(([key, value]) => {
+    if (HIDDEN_KEYS.includes(key)) {
+        console.log(`${key}=***`);
+    } else {
+        console.log(`${key}=${value}`);
+    }
+});

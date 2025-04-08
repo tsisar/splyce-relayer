@@ -225,7 +225,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
         log.debug(TAG, "PostVaaOnSolana tx:", signatures.join(", "));
     } catch (e) {
-        log.error(TAG, e);
+        console.log(e);
         process.exit(1);
     }
 
@@ -292,7 +292,7 @@ function getBotKeypair(): Keypair {
     return Keypair.fromSecretKey(Uint8Array.from(privateKeyArray));
 }
 
-export async function processVAA(vaa: string) {
+export async function processVaa(vaa: string) {
     const payer = getBotKeypair()
 
     // Set up the manager.

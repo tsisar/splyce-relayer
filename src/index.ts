@@ -7,30 +7,54 @@ import {
 import {
     CHAIN_ID_SOLANA,
     CHAIN_ID_SEPOLIA,
-    CHAIN_ID_ARBITRUM,
-    CHAIN_ID_OPTIMISM,
+    CHAIN_ID_BSC,
     ChainId,
 } from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
 import { tryHexToNativeString } from "@certusone/wormhole-sdk/lib/cjs/utils/array";
 import { TokenBridgePayload } from "@certusone/wormhole-sdk";
-import { processVAA } from "./worker";
+import { processVaa } from "./worker";
 import {
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
-    ARBITRUM_SEPOLIA_TOKEN_BRIDGE,
-    OPTIMISM_SEPOLIA_TOKEN_BRIDGE,
+    BNB_SMART_CHAIN_TOKEN_BRIDGE,
     SPY_HOST,
     SPY_PORT,
     WORMHOLE_RELAYER,
-    WORMHOLE_RPC_ENDPOINT, REDIS_HOST, REDIS_PORT
+    WORMHOLE_RPC_ENDPOINT,
+    REDIS_HOST,
+    REDIS_PORT
 } from "./config/config";
-import {initPgStorage} from "../pg-storage/client";
-import {getLatestSequence, saveVaaToPostgres} from "../pg-storage";
+import { initPgStorage } from "./pg-storage/client";
+import { saveVaaToPostgres } from "./pg-storage/vaa";
 
 const EMITTERS = [
     { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
-    { chainId: CHAIN_ID_ARBITRUM, address: ARBITRUM_SEPOLIA_TOKEN_BRIDGE },
-    { chainId: CHAIN_ID_OPTIMISM, address: OPTIMISM_SEPOLIA_TOKEN_BRIDGE },
+    { chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
 ];
+
+// Middleware: filter TransferWithPayload to Solana & specific receiver
+const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
+    const payloadType = ctx.tokenBridge?.payload?.payloadType;
+    const toChain = ctx.tokenBridge?.payload?.toChain as ChainId;
+    const toAddress = ctx.tokenBridge?.payload?.to.toString() as string;
+    const receiver = tryHexToNativeString(toAddress, toChain);
+
+    if (payloadType !== TokenBridgePayload.TransferWithPayload) {
+        ctx.logger.debug(`Filtered out payload type: ${payloadType}`);
+        return;
+    }
+
+    if (toChain !== CHAIN_ID_SOLANA) {
+        ctx.logger.debug(`Filtered out toChain: ${toChain}`);
+        return;
+    }
+
+    if (receiver !== WORMHOLE_RELAYER) {
+        ctx.logger.debug(`Filtered out receiver: ${receiver}`);
+        return;
+    }
+
+    return next();
+};
 
 (async function main() {
     await initPgStorage();
@@ -38,41 +62,19 @@ const EMITTERS = [
     const app = new StandardRelayerApp<StandardRelayerContext>(
         Environment.TESTNET,
         {
-            name: `Splyce_Relayer_Solana`,
+            name: `splyce-relayer-solana`,
             spyEndpoint: `${SPY_HOST}:${SPY_PORT}`,
             wormholeRpcs: [WORMHOLE_RPC_ENDPOINT],
             redis: {
                 host: REDIS_HOST,
                 port: REDIS_PORT,
             },
+            maxCompletedQueueSize: 0, // не зберігати успішні jobs
+            maxFailedQueueSize: 100, // зберігати лише останні 100 помилок (опційно)
         },
     );
 
-    // Middleware: filter TransferWithPayload to Solana & specific receiver
-    const onlyTransferWithPayload: Middleware<StandardRelayerContext> = async (ctx, next) => {
-        const payloadType = ctx.tokenBridge?.payload?.payloadType;
-        const toChain = ctx.tokenBridge?.payload?.toChain as ChainId;
-        const receiver = tryHexToNativeString(ctx.tokenBridge?.payload?.to.toString("hex"), toChain);
-
-        if (payloadType !== TokenBridgePayload.TransferWithPayload) {
-            ctx.logger.debug(`Filtered out payload type: ${payloadType}`);
-            return;
-        }
-
-        if (toChain !== CHAIN_ID_SOLANA) {
-            ctx.logger.debug(`Filtered out toChain: ${toChain}`);
-            return;
-        }
-
-        if (receiver !== WORMHOLE_RELAYER) {
-            ctx.logger.debug(`Filtered out receiver: ${receiver}`);
-            return;
-        }
-
-        return next();
-    };
-
-    app.use(onlyTransferWithPayload);
+    app.use(filter);
 
     for (const { chainId, address } of EMITTERS) {
         app.chain(chainId).address(address, async (ctx, next) => {
@@ -85,11 +87,11 @@ const EMITTERS = [
 
             ctx.logger.info(
                 `TransferWithPayload processing for: \n` +
-                `\tToken: ${payload.tokenChain}:${payload.tokenAddress.toString("hex")}\n` +
-                `\tAmount: ${payload.amount}\n` +
-                `\tSender: ${payload.fromAddress?.toString("hex")}\n` +
-                `\tReceiver: ${payload.toChain}:${tryHexToNativeString(payload.to.toString("hex"), payload.toChain as ChainId)}\n` +
-                `\tPayload: ${payload.tokenTransferPayload.toString("hex")}\n` +
+                `\tToken: ${payload?.tokenChain}:${payload?.tokenAddress.toString("hex")}\n` +
+                `\tAmount: ${payload?.amount}\n` +
+                `\tSender: ${payload?.fromAddress?.toString("hex")}\n` +
+                `\tReceiver: ${payload?.toChain}:${tryHexToNativeString(payload?.to.toString("hex") as string, payload?.toChain as ChainId)}\n` +
+                `\tPayload: ${payload?.tokenTransferPayload.toString("hex")}\n` +
                 `\tTxHash: ${hash}\n`,
             );
 
@@ -102,7 +104,7 @@ const EMITTERS = [
             await saveVaaToPostgres(emitterChain, emitterAddress, sequence, vaaBase64);
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
-            await processVAA(vaaBase64);
+            await processVaa(vaaBase64);
             next();
         });
     }

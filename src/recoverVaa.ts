@@ -1,13 +1,12 @@
 import axios from 'axios';
-import {processVAA} from "./worker";
+import {processVaa} from "./worker";
 import {log} from "./logger/logger";
 import {CHAIN_ID_SEPOLIA, tryNativeToHexString} from "@certusone/wormhole-sdk";
 import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE, WORMHOLE_RPC_ENDPOINT} from "./config/config";
-import {getLatestSequence} from "../pg-storage";
+import {getLatestSequence} from "./pg-storage/vaa";
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
-//const emitterAddress = "db5492265f6038831e89f495670ff909ade94bd9"; // Token Bridge
-const sequence = 4637;
+const sequence = 4647;
 const emitterAddress = tryNativeToHexString(
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
     emitterChain
@@ -19,7 +18,7 @@ const endpoints = [
 
 const TAG = "BackfillVaa";
 
-async function fetchVAA() {
+async function fetchVaa() {
     const latestSequence: string | null = await getLatestSequence(emitterChain, emitterAddress);
     log.info(TAG, `Latest saved sequence for ${emitterChain}/${emitterAddress}: ${latestSequence}`);
 
@@ -38,20 +37,20 @@ async function fetchVAA() {
                 log.debug(TAG, "base64 data:", base64);
 
                 // PROCESS VAA
-                await processVAA(base64);
+                await processVaa(base64);
 
                 return base64;
             }
 
             console.warn("Unexpected response format:", res.data);
         } catch (err) {
-            console.warn(`Failed to fetch from ${url}:`, err.message || err);
+            console.warn(`Failed to fetch from ${url}:`, err);
         }
     }
 
     throw new Error("Could not fetch VAA from any endpoint.");
 }
 
-fetchVAA().then((vaa) => {
+fetchVaa().then((vaa) => {
     log.debug(TAG, "Final VAA buffer length:", vaa.length);
 }).catch(console.error);

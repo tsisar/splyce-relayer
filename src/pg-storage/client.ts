@@ -1,11 +1,12 @@
 import { Pool } from "pg";
+import {POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER} from "../config/config";
 
 export const pgPool = new Pool({
-    user: process.env.POSTGRES_USER || "graph-node",
-    password: process.env.POSTGRES_PASSWORD || "let-me-in",
-    database: process.env.POSTGRES_DB || "graph-node",
-    host: process.env.POSTGRES_HOST || "localhost",
-    port: Number(process.env.POSTGRES_PORT) || 5432,
+    user: POSTGRES_USER,
+    password: POSTGRES_PASSWORD,
+    database: POSTGRES_DB,
+    host: POSTGRES_HOST,
+    port: POSTGRES_PORT,
 });
 
 export async function initPgStorage() {
@@ -19,3 +20,5 @@ export async function initPgStorage() {
     );
   `);
 }
+
+// TODO зберігати хеш транзакцій

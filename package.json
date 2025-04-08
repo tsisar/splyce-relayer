@@ -3,42 +3,29 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "ts-node src/app.ts",
-    "worker": "ts-node src/worker.ts",
-    "backfill": "ts-node src/backfillVaa.ts",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "recover": "ts-node src/recoverVaa.ts",
     "build": "tsc",
     "watch": "tsc --watch"
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.11",
     "@coral-xyz/anchor": "^0.31.0",
-    "@mysten/sui.js": "^0.32.1",
     "@solana-developers/helpers": "^2.8.1",
-    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.0",
     "@types/node": "^22.9.0",
     "@wormhole-foundation/relayer-engine": "^0.2.1",
-    "@wormhole-foundation/sdk": "^1.14.1",
+    "axios": "^1.8.4",
     "bs58": "^5.0.0",
     "dotenv": "^16.4.7",
-    "koa": "^2.14.1",
-    "koa-router": "^12.0.0",
-    "node-redis": "^0.1.7",
     "pg": "^8.14.1",
-    "redis": "^4.7.0",
-    "typescript": "^5.1.6",
-    "undici": "^7.7.0",
-    "winston": "^3.8.2",
-    "yargs": "^17.7.1"
+    "typescript": "^5.1.6"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/koa-router": "^7.4.4",
-    "@types/pg": "^8.11.11",
-    "@types/winston": "^2.4.4",
-    "@types/yargs": "^17.0.22",
-    "ganache": "^7.8.0",
-    "prettier": "^2.8.4"
+    "@types/pg": "^8.11.11"
   }
 }
