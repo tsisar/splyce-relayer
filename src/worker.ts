@@ -30,6 +30,7 @@ import {WormholeRelayer} from "./types/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
 import {SOLANA_CORE_BRIDGE, SOLANA_TOKEN_BRIDGE} from "./config/constants";
 import AsyncLock from "async-lock";
+import {saveTxHash} from "./pg-storage/vaa";
 
 export const lock = new AsyncLock();
 
@@ -90,7 +91,6 @@ async function postVaaOnSolana(
     coreBridge: PublicKey,
     signedMsg: Buffer
 ): Promise<string[]> {
-    console.log("---------------------------------------------------------");
     log.debug(TAG, "Post Vaa On Solana...");
 
     const wallet = NodeWallet.fromSecretKey(payer.secretKey);
@@ -113,7 +113,6 @@ async function buildReceiveInstruction(
     tokenBridgeWrappedMint:
     PublicKey
 ): Promise<TransactionInstruction> {
-    console.log("---------------------------------------------------------");
     log.debug(TAG, "Build Receive Instruction...");
 
     const tokenBridgeClaim = deriveClaimKey(
@@ -151,7 +150,6 @@ async function buildReceiveInstruction(
 }
 
 async function buildExecuteDepositInstruction(wormholeProgram: Program<WormholeRelayer>, parsedVaa: ParsedVaa, tokenBridgeWrappedMint: PublicKey, recipient: PublicKey, vault: PublicKey): Promise<TransactionInstruction> {
-    console.log("---------------------------------------------------------");
     log.debug(TAG, "Build ExecuteDeposit Instruction...");
 
     const [depositPDA] = PublicKey.findProgramAddressSync(
@@ -227,7 +225,16 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     // Post the VAA on chain.
     try {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
-        log.debug(TAG, "PostVaaOnSolana tx:", signatures.join(", "));
+
+        for (const sig of signatures) {
+            log.info(TAG, "PostVaaOnSolana tx:", sig);
+            await saveTxHash(
+                parsedVaa.emitterChain,
+                parsedVaa.emitterAddress.toString("hex"),
+                parsedVaa.sequence.toString(),
+                sig
+            );
+        }
     } catch (e) {
         throw new Error(`postVaaOnSolana failed: ${e instanceof Error ? e.message : String(e)}`);
     }
@@ -254,8 +261,14 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     try {
         const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
         const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
-        const signature2 = await sendTransaction(provider, [instruction1, instruction2], payer);
-        log.debug(TAG, "ExecuteDeposit tx:", signature2);
+        const signature = await sendTransaction(provider, [instruction1, instruction2], payer);
+        log.info(TAG, "Transaction tx:", signature);
+        await saveTxHash(
+            parsedVaa.emitterChain,
+            parsedVaa.emitterAddress.toString("hex"),
+            parsedVaa.sequence.toString(),
+            signature
+        );
     } catch (error) {
         throw new Error(`ExecuteDeposit failed: ${error instanceof Error ? error.message : String(error)}`);
     }

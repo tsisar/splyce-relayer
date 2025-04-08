@@ -22,7 +22,7 @@ import {
     REDIS_PORT, getStartingSequenceConfig,
 } from "./config/config";
 import { initPgStorage } from "./pg-storage/client";
-import { saveVaaToPostgres } from "./pg-storage/vaa";
+import { saveVaa } from "./pg-storage/vaa";
 import {
     BNB_SMART_CHAIN_TOKEN_BRIDGE,
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE
@@ -162,7 +162,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
             const sequence = vaa.sequence.toString();
             const emitterChain = vaa.emitterChain;
 
-            await saveVaaToPostgres(emitterChain, emitterAddress, sequence, vaaBase64);
+            await saveVaa(emitterChain, emitterAddress, sequence, vaaBase64);
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
             await processVaa(vaaBase64);

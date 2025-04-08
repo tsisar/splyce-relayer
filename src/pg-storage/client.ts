@@ -11,14 +11,26 @@ export const pgPool = new Pool({
 
 export async function initPgStorage() {
     await pgPool.query(`
-    CREATE TABLE IF NOT EXISTS vaa_storage (
-      emitter_chain INTEGER NOT NULL,
-      emitter_address TEXT NOT NULL,
-      sequence TEXT NOT NULL,
-      vaa_base64 TEXT NOT NULL,
-      PRIMARY KEY (emitter_chain, emitter_address, sequence)
-    );
-  `);
-}
+        CREATE TABLE IF NOT EXISTS vaa_storage
+        (
+            emitter_chain   INTEGER NOT NULL,
+            emitter_address TEXT    NOT NULL,
+            sequence        TEXT    NOT NULL,
+            vaa_base64      TEXT    NOT NULL,
+            PRIMARY KEY (emitter_chain, emitter_address, sequence)
+        );
 
-// TODO зберігати хеш транзакцій
+        CREATE TABLE IF NOT EXISTS transaction_hashes
+        (
+            emitter_chain   INTEGER   NOT NULL,
+            emitter_address TEXT      NOT NULL,
+            sequence        TEXT      NOT NULL,
+            tx_hash         TEXT      NOT NULL,
+            created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
+            PRIMARY KEY (emitter_chain, emitter_address, sequence, tx_hash),
+            FOREIGN KEY (emitter_chain, emitter_address, sequence)
+                REFERENCES vaa_storage (emitter_chain, emitter_address, sequence)
+                ON DELETE CASCADE
+        );
+    `);
+}

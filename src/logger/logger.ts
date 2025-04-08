@@ -12,6 +12,8 @@ export class log {
     private static currentLevel = process.env.LOG_LEVEL?.toLowerCase() || "info";
     private static levelIndex = log.levels.indexOf(log.currentLevel);
 
+    private static showTimestamp = process.env.LOG_TIMESTAMP !== "false"; // default: true
+
     private static shouldLog(level: string): boolean {
         const idx = log.levels.indexOf(level.toLowerCase());
         return idx >= log.levelIndex;
@@ -33,10 +35,14 @@ export class log {
     }
 
     private static formatPrefix(level: string, TAG: string): string {
-        const now = new Date();
-        const formattedDate = now.toISOString().replace("T", " ").replace("Z", "");
         const levelColored = this.colorizeLevel(level.toUpperCase());
-        return `${formattedDate} ${levelColored} [${TAG}]`;
+        const tagPart = `[${TAG}]`;
+        if (this.showTimestamp) {
+            const now = new Date();
+            const formattedDate = now.toISOString().replace("T", " ").replace("Z", "");
+            return `${formattedDate} ${levelColored} ${tagPart}`;
+        }
+        return `${levelColored} ${tagPart}`;
     }
 
     static debug(TAG: string, message: string, obj?: any): void {
