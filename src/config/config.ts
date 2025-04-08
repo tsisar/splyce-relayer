@@ -1,5 +1,4 @@
 import * as dotenv from "dotenv";
-import * as fs from "node:fs";
 
 dotenv.config();
 

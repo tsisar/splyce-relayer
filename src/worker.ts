@@ -253,15 +253,8 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
 
     try {
         const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
-        const signature1 = await sendTransaction(provider, [instruction1], payer);
-        log.debug(TAG, "Receive tx:", signature1);
-    } catch (error) {
-        throw new Error(`Receive failed: ${error instanceof Error ? error.message : String(error)}`);
-    }
-
-    try {
         const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
-        const signature2 = await sendTransaction(provider, [instruction2], payer);
+        const signature2 = await sendTransaction(provider, [instruction1, instruction2], payer);
         log.debug(TAG, "ExecuteDeposit tx:", signature2);
     } catch (error) {
         throw new Error(`ExecuteDeposit failed: ${error instanceof Error ? error.message : String(error)}`);

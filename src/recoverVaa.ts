@@ -7,7 +7,7 @@ import {getLatestSequence} from "./pg-storage/vaa";
 import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
-const sequence = 4647;
+const sequence = 4653;
 const emitterAddress = tryNativeToHexString(
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
     emitterChain
@@ -17,7 +17,7 @@ const endpoints = [
     `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
 ];
 
-const TAG = "BackfillVaa";
+const TAG = "recoverVaa";
 
 async function fetchVaa() {
     const latestSequence: string | null = await getLatestSequence(emitterChain, emitterAddress);
