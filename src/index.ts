@@ -130,7 +130,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
             maxFailedQueueSize: 100,  // Limit how many failed jobs are stored in Redis (for diagnostics)
             // Configuration for the missed VAA recovery worker (backfill logic)
             missedVaaOptions: {
-                concurrency: 4,  // Number of concurrent missed VAA processing jobs
+                concurrency: 1,  // Number of concurrent missed VAA processing jobs/ should be 1 because of we use 1 key in worker
                 checkInterval: 15000, // Interval (ms) between checks for missed VAAs
                 fetchVaaRetries: 3, // How many times to retry fetching a missed VAA
                 vaasFetchConcurrency: 4, // Number of VAA fetches to run in parallel

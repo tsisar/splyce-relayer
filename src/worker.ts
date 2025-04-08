@@ -29,6 +29,9 @@ import {sendTransaction} from "./provider/transaction";
 import {WormholeRelayer} from "./types/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
 import {SOLANA_CORE_BRIDGE, SOLANA_TOKEN_BRIDGE} from "./config/constants";
+import AsyncLock from "async-lock";
+
+export const lock = new AsyncLock();
 
 const TAG = "Worker";
 
@@ -294,10 +297,12 @@ export async function processVaa(vaa: string): Promise<void> {
     const payer = getBotKeypair();
     const manager = new Manager(payer);
 
-    try {
-        await relay(manager, payer, vaa);
-    } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        throw new Error(`VAA processing failed: ${message}`);
-    }
+    await lock.acquire("signing-lock", async () => {
+        try {
+            await relay(manager, payer, vaa);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            throw new Error(`VAA processing failed: ${message}`);
+        }
+    });
 }
