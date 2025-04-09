@@ -149,7 +149,13 @@ async function buildReceiveInstruction(
         .instruction();
 }
 
-async function buildExecuteDepositInstruction(wormholeProgram: Program<WormholeRelayer>, parsedVaa: ParsedVaa, tokenBridgeWrappedMint: PublicKey, recipient: PublicKey, vault: PublicKey): Promise<TransactionInstruction> {
+async function buildExecuteDepositInstruction(
+    wormholeProgram: Program<WormholeRelayer>,
+    parsedVaa: ParsedVaa,
+    tokenBridgeWrappedMint: PublicKey,
+    recipient: PublicKey,
+    vault: PublicKey
+): Promise<TransactionInstruction> {
     log.debug(TAG, "Build ExecuteDeposit Instruction...");
 
     const [depositPDA] = PublicKey.findProgramAddressSync(

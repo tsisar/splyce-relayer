@@ -13,6 +13,7 @@ export class log {
     private static levelIndex = log.levels.indexOf(log.currentLevel);
 
     private static showTimestamp = process.env.LOG_TIMESTAMP !== "false"; // default: true
+    private static showTag = process.env.LOG_TAG !== "false"; // default: true
 
     private static shouldLog(level: string): boolean {
         const idx = log.levels.indexOf(level.toLowerCase());
@@ -35,14 +36,20 @@ export class log {
     }
 
     private static formatPrefix(level: string, TAG: string): string {
-        const levelColored = this.colorizeLevel(level.toUpperCase());
-        const tagPart = `[${TAG}]`;
-        if (this.showTimestamp) {
-            const now = new Date();
-            const formattedDate = now.toISOString().replace("T", " ").replace("Z", "");
-            return `${formattedDate} ${levelColored} ${tagPart}`;
-        }
-        return `${levelColored} ${tagPart}`;
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, "0");
+        const padMs = (n: number) => String(n).padStart(3, "0");
+
+        const formattedDate = `${pad(now.getDate())}.${pad(now.getMonth() + 1)}.${now.getFullYear()} ` +
+            `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}.${padMs(now.getMilliseconds())}`;
+
+        const levelRaw = level.toUpperCase().padEnd(6, " ");
+        const levelColored = this.colorizeLevel(levelRaw);
+
+        const datePart = this.showTimestamp ? `${formattedDate} | ` : "";
+        const tagPart = this.showTag ? ` ${TAG} |` : "";
+
+        return `${datePart}${levelColored}|${tagPart}`;
     }
 
     static debug(TAG: string, message: string, obj?: any): void {

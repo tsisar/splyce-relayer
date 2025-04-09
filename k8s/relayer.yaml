@@ -51,6 +51,10 @@ spec:
               value: "7000"
             - name: LOG_LEVEL
               value: "debug"
+            - name: LOG_TIMESTAMP
+              value: "true"
+            - name: LOG_TAG
+              value: "false"
           resources:
             limits:
               cpu: "500m"
