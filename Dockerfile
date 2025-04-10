@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM node:22-alpine AS builder
+FROM node:23-alpine AS builder
 
 RUN apk add --no-cache python3 make g++
 
@@ -18,7 +18,9 @@ RUN npm run build
 
 
 # Stage 2: Create the production image
-FROM node:22-alpine
+FROM node:23-alpine
+
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
 

@@ -28,8 +28,9 @@ import {
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE
 } from "./config/constants";
 
-import winston from "winston";
+import { error, warning, info } from "./notification/notification";
 import { CustomConsoleTransport } from "./logger/custom-transport";
+import winston from "winston";
 
 export const winstonLogger = winston.createLogger({
     level: "debug",
@@ -39,7 +40,7 @@ export const winstonLogger = winston.createLogger({
 
 const EMITTERS = [
     { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
-    { chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
+    //{ chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
 ];
 
 const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
@@ -122,6 +123,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
 };
 
 (async function main() {
+    await info("Job finished successfully");
     await initPgStorage();
 
     const app = new StandardRelayerApp<StandardRelayerContext>(
@@ -165,7 +167,14 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
             await saveVaa(emitterChain, emitterAddress, sequence, vaaBase64);
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
-            await processVaa(vaaBase64);
+            try {
+                await processVaa(vaaBase64);
+            } catch (e) {
+                const message = e instanceof Error ? e.message : String(e);
+                await error(`Error processing VAA: ${message}`);
+                throw new Error(`Error processing VAA: ${message}`);
+            }
+
             return next();
         });
     }
