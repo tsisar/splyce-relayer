@@ -7,7 +7,7 @@ import {getLatestSequence} from "./pg-storage/vaa";
 import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
 const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
-const sequence = 4653;
+const sequence = 4691;
 const emitterAddress = tryNativeToHexString(
     ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
     emitterChain

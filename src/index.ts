@@ -31,6 +31,7 @@ import {
 import { error, warning, info } from "./notification/notification";
 import { CustomConsoleTransport } from "./logger/custom-transport";
 import winston from "winston";
+import {initRedis, quitRedis} from "./redis/redis";
 
 export const winstonLogger = winston.createLogger({
     level: "debug",
@@ -123,8 +124,10 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
 };
 
 (async function main() {
-    await info("Job finished successfully");
     await initPgStorage();
+    await initRedis();
+
+    await info('Service started successfully');
 
     const app = new StandardRelayerApp<StandardRelayerContext>(
         Environment.TESTNET,
@@ -163,6 +166,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
             const emitterAddress = vaa.emitterAddress.toString("hex");
             const sequence = vaa.sequence.toString();
             const emitterChain = vaa.emitterChain;
+            const sourceTxHash = ctx.sourceTxHash;
 
             await saveVaa(emitterChain, emitterAddress, sequence, vaaBase64);
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
@@ -171,7 +175,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
                 await processVaa(vaaBase64);
             } catch (e) {
                 const message = e instanceof Error ? e.message : String(e);
-                await error(`Error processing VAA: ${message}`);
+                await error(`Error processing VAA: ${message}\nSource Tx Hash: ${sourceTxHash}`);
                 throw new Error(`Error processing VAA: ${message}`);
             }
 
@@ -181,3 +185,12 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
 
     await app.listen();
 })();
+
+process.on('SIGINT', async () => {
+    await quitRedis();
+    process.exit();
+});
+process.on('SIGTERM', async () => {
+    await quitRedis();
+    process.exit();
+});

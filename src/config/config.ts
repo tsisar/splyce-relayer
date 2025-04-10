@@ -41,7 +41,7 @@ export const CONFIRM_TIMEOUT = parseInt(process.env.CONFIRM_TRANSACTION_INITIAL_
 export const DEFAULT_COMPUTE_UNIT_PRICE = parseInt(process.env.DEFAULT_COMPUTE_UNIT_PRICE || "1000"); // Default compute unit price for the transaction, in lamports
 export const MAX_COMPUTE_UNIT_PRICE = parseInt(process.env.MAX_COMPUTE_UNIT_PRICE || "1000000"); // Maximum compute unit price for the transaction, in lamports
 export const COMPUTE_UNIT_LIMIT = parseInt(process.env.COMPUTE_UNIT_LIMIT || "200000"); // Maximum compute unit limit for the transaction, in compute units, use in case in not specified dinamically
-export const COMPUTE_UNIT_BUFFER = parseFloat(process.env.COMPUTE_UNIT_BUFFER || "0.1"); // Buffer to add to the compute unit limit, in percentage
+export const COMPUTE_UNIT_BUFFER = parseFloat(process.env.COMPUTE_UNIT_BUFFER || "0.2"); // Buffer to add to the compute unit limit, in percentage
 export const TRANSACTION_MAX_RETRIES = parseInt(process.env.TRANSACTION_MAX_RETRIES || "3"); // Maximum number of retries for the transaction in case of failure
 export const TRANSACTION_RETRY_INTERVAL = parseInt(process.env.TRANSACTION_RETRY_INTERVAL || "5000"); // Retry interval for the transaction, in milliseconds
 export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION === "true" || true; // Simulate the transaction before sending it
