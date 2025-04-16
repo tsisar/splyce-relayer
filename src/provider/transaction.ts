@@ -117,12 +117,16 @@ async function resolveComputeUnits(
     bot: Keypair,
     lutAccounts: AddressLookupTableAccount[]
 ): Promise<number> {
-    const estimatedUnits = await getSimulationComputeUnits(
-        provider.connection,
-        instructions,
-        bot.publicKey,
-        lutAccounts
-    );
+    let estimatedUnits = null
+
+    if (SIMULATE_TRANSACTION) {
+        estimatedUnits = await getSimulationComputeUnits(
+            provider.connection,
+            instructions,
+            bot.publicKey,
+            lutAccounts
+        );
+    }
 
     let requiredUnits = estimatedUnits ?? COMPUTE_UNIT_LIMIT;
     const buffer = requiredUnits * COMPUTE_UNIT_BUFFER;
@@ -163,6 +167,7 @@ export async function sendTransaction(
             return signature;
         } catch (err: any) {
             if (err instanceof TransactionExpiredTimeoutError) {
+                log.debug(TAG, `Transaction signature: ${err.signature}`);
                 const status = await provider.connection.getSignatureStatus(err.signature);
                 if (status?.value?.confirmationStatus === "confirmed") {
                     log.debug(TAG, "Transaction actually confirmed:", err.signature);

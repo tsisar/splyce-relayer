@@ -8,9 +8,9 @@ dotenv.config();
 // export const WORMHOLE_RELAYER = idl.address;
 
 // Address of the relayer contract on Solana
-export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "8vf4LsW4saqaGVJNj1mZNYX88ojp9hYc1EEnwCHWHCGa";
+export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "";
 // Accountant address for vault
-export const ACCOUNTANT = process.env.ACCOUNTANT || "EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7"
+export const ACCOUNTANT = process.env.ACCOUNTANT || "EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7";
 
 // Wormhole RPC endpoint
 export const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.testnet.wormholescan.io";
@@ -44,7 +44,7 @@ export const COMPUTE_UNIT_LIMIT = parseInt(process.env.COMPUTE_UNIT_LIMIT || "20
 export const COMPUTE_UNIT_BUFFER = parseFloat(process.env.COMPUTE_UNIT_BUFFER || "0.2"); // Buffer to add to the compute unit limit, in percentage
 export const TRANSACTION_MAX_RETRIES = parseInt(process.env.TRANSACTION_MAX_RETRIES || "3"); // Maximum number of retries for the transaction in case of failure
 export const TRANSACTION_RETRY_INTERVAL = parseInt(process.env.TRANSACTION_RETRY_INTERVAL || "5000"); // Retry interval for the transaction, in milliseconds
-export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION === "true" || true; // Simulate the transaction before sending it
+export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION !== "false"; // Simulate the transaction before sending it
 
 const HIDDEN_KEYS = [
     "PRIVATE_KEY",

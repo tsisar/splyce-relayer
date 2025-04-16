@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/wormhole_relayer.json`.
  */
 export type WormholeRelayer = {
-  "address": "8vf4LsW4saqaGVJNj1mZNYX88ojp9hYc1EEnwCHWHCGa",
+  "address": "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5",
   "metadata": {
     "name": "wormholeRelayer",
     "version": "0.1.0",
@@ -515,6 +515,203 @@ export type WormholeRelayer = {
       "args": []
     },
     {
+      "name": "initTokenAccounts",
+      "discriminator": [
+        18,
+        116,
+        17,
+        220,
+        17,
+        174,
+        229,
+        193
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenBridgeWrappedMint",
+          "writable": true
+        },
+        {
+          "name": "relayerTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "config"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "tokenBridgeWrappedMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "relayerFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "tokenBridgeWrappedMint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "docs": [
+            "Associated Token program."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "systemProgram",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "docs": [
+            "Rent sysvar."
+          ],
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "initialize",
       "discriminator": [
         175,
@@ -902,6 +1099,40 @@ export type WormholeRelayer = {
           }
         },
         {
+          "name": "relayerFeeTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  95,
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "tokenBridgeWrappedMint"
+              }
+            ]
+          }
+        },
+        {
           "name": "deposit",
           "writable": true,
           "pda": {
@@ -1050,6 +1281,798 @@ export type WormholeRelayer = {
           }
         }
       ]
+    },
+    {
+      "name": "returnDeposit",
+      "discriminator": [
+        166,
+        248,
+        12,
+        232,
+        72,
+        180,
+        30,
+        189
+      ],
+      "accounts": [
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "recipientTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "recipient"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "underlyingMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "redeemer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deposit",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "underlyingMint",
+          "writable": true
+        },
+        {
+          "name": "relayerTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "redeemer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "underlyingMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "docs": [
+            "Associated Token program."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "tokenizedVaultProgram",
+          "docs": [
+            "Tokenized Vault program"
+          ],
+          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+        },
+        {
+          "name": "systemProgram",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "setRedeemerFee",
+      "discriminator": [
+        25,
+        85,
+        220,
+        23,
+        146,
+        17,
+        47,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "roles",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "accessControl"
+            }
+          }
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "accessControl",
+          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+        }
+      ],
+      "args": [
+        {
+          "name": "feeBps",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "unwrapDepositToken",
+      "discriminator": [
+        74,
+        171,
+        211,
+        242,
+        170,
+        185,
+        128,
+        251
+      ],
+      "accounts": [
+        {
+          "name": "redeemer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deposit",
+          "writable": true
+        },
+        {
+          "name": "vault",
+          "writable": true
+        },
+        {
+          "name": "wrappedUnderlyingMint",
+          "writable": true
+        },
+        {
+          "name": "underlyingMint",
+          "writable": true
+        },
+        {
+          "name": "wrappedTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "redeemer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "wrappedUnderlyingMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "unwrappedTokenAccount",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "redeemer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "underlyingMint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "tickArray0",
+          "writable": true
+        },
+        {
+          "name": "tickArray1",
+          "writable": true
+        },
+        {
+          "name": "tickArray2",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultA",
+          "writable": true
+        },
+        {
+          "name": "tokenVaultB",
+          "writable": true
+        },
+        {
+          "name": "oracle",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  114,
+                  97,
+                  99,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "whirlpool"
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "whirlpoolProgram"
+            }
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "whirlpool",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "docs": [
+            "Token program."
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associatedTokenProgram",
+          "docs": [
+            "Associated Token program."
+          ],
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "tokenizedVaultProgram",
+          "docs": [
+            "Tokenized Vault program"
+          ],
+          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+        },
+        {
+          "name": "systemProgram",
+          "docs": [
+            "System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "whirlpoolProgram",
+          "docs": [
+            "Whirlpool program"
+          ],
+          "address": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc"
+        }
+      ],
+      "args": [
+        {
+          "name": "otherAmountThreshold",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "withdrawFee",
+      "discriminator": [
+        14,
+        122,
+        231,
+        218,
+        31,
+        238,
+        223,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "roles",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "signer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "accessControl"
+            }
+          }
+        },
+        {
+          "name": "redeemer",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  101,
+                  109,
+                  101,
+                  114
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "feeRecipientTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "destinationTokenAccount",
+          "writable": true
+        },
+        {
+          "name": "tokenProgram",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "accessControl",
+          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -1080,6 +2103,19 @@ export type WormholeRelayer = {
       ]
     },
     {
+      "name": "userRole",
+      "discriminator": [
+        62,
+        252,
+        194,
+        137,
+        183,
+        165,
+        147,
+        28
+      ]
+    },
+    {
       "name": "vault",
       "discriminator": [
         211,
@@ -1090,6 +2126,112 @@ export type WormholeRelayer = {
         152,
         117,
         119
+      ]
+    },
+    {
+      "name": "whirlpool",
+      "discriminator": [
+        63,
+        149,
+        209,
+        12,
+        225,
+        128,
+        99,
+        9
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "depositExecuted",
+      "discriminator": [
+        129,
+        128,
+        106,
+        77,
+        252,
+        43,
+        165,
+        41
+      ]
+    },
+    {
+      "name": "depositReturned",
+      "discriminator": [
+        2,
+        77,
+        168,
+        193,
+        85,
+        51,
+        45,
+        241
+      ]
+    },
+    {
+      "name": "depositTokenUnwrapped",
+      "discriminator": [
+        163,
+        191,
+        148,
+        213,
+        149,
+        114,
+        209,
+        56
+      ]
+    },
+    {
+      "name": "feeWithdrawn",
+      "discriminator": [
+        167,
+        107,
+        0,
+        35,
+        67,
+        79,
+        125,
+        118
+      ]
+    },
+    {
+      "name": "redeemerFeeSet",
+      "discriminator": [
+        196,
+        201,
+        202,
+        30,
+        49,
+        72,
+        41,
+        224
+      ]
+    },
+    {
+      "name": "tokenAccountsInitialized",
+      "discriminator": [
+        196,
+        204,
+        78,
+        116,
+        87,
+        132,
+        235,
+        123
+      ]
+    },
+    {
+      "name": "tokenReceived",
+      "discriminator": [
+        251,
+        126,
+        204,
+        211,
+        2,
+        159,
+        194,
+        227
       ]
     }
   ],
@@ -1151,11 +2293,143 @@ export type WormholeRelayer = {
     },
     {
       "code": 6011,
+      "name": "invalidAccountant",
+      "msg": "Invalid accountant"
+    },
+    {
+      "code": 6012,
       "name": "depositAlreadyProcessed",
       "msg": "Deposit already processed"
+    },
+    {
+      "code": 6013,
+      "name": "invalidAmount",
+      "msg": "Invalid amount"
+    },
+    {
+      "code": 6014,
+      "name": "cannotReturnDeposit",
+      "msg": "Cannot return deposit"
     }
   ],
   "types": [
+    {
+      "name": "depositExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "vaultAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "wormholeMessageHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "depositReturned",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "vaultAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "depositTokenUnwrapped",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "depositKey",
+            "type": "pubkey"
+          },
+          {
+            "name": "amountWrapped",
+            "type": "u64"
+          },
+          {
+            "name": "tokenWrapped",
+            "type": "pubkey"
+          },
+          {
+            "name": "amountUnwrapped",
+            "type": "u64"
+          },
+          {
+            "name": "tokenUnwrapped",
+            "type": "pubkey"
+          },
+          {
+            "name": "aToB",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "feeWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
     {
       "name": "inboundTokenBridgeAddresses",
       "type": {
@@ -1233,6 +2507,99 @@ export type WormholeRelayer = {
                 "name": "inboundTokenBridgeAddresses"
               }
             }
+          },
+          {
+            "name": "processingFeeBps",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "redeemerFeeSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "feeBps",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tokenAccountsInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "tokenBridgeWrappedMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "relayerTokenAccount",
+            "type": "pubkey"
+          },
+          {
+            "name": "relayerFeeTokenAccount",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tokenReceived",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "vaultAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "feeAmount",
+            "type": "u64"
+          },
+          {
+            "name": "tokenMint",
+            "type": "pubkey"
+          },
+          {
+            "name": "wormholeMessageHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "userRole",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "hasRole",
+            "type": "bool"
           }
         ]
       }
@@ -1361,6 +2728,137 @@ export type WormholeRelayer = {
           {
             "name": "lastProfitUpdate",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "whirlpool",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "whirlpoolsConfig",
+            "type": "pubkey"
+          },
+          {
+            "name": "whirlpoolBump",
+            "type": {
+              "array": [
+                "u8",
+                1
+              ]
+            }
+          },
+          {
+            "name": "tickSpacing",
+            "type": "u16"
+          },
+          {
+            "name": "tickSpacingSeed",
+            "type": {
+              "array": [
+                "u8",
+                2
+              ]
+            }
+          },
+          {
+            "name": "feeRate",
+            "type": "u16"
+          },
+          {
+            "name": "protocolFeeRate",
+            "type": "u16"
+          },
+          {
+            "name": "liquidity",
+            "type": "u128"
+          },
+          {
+            "name": "sqrtPrice",
+            "type": "u128"
+          },
+          {
+            "name": "tickCurrentIndex",
+            "type": "i32"
+          },
+          {
+            "name": "protocolFeeOwedA",
+            "type": "u64"
+          },
+          {
+            "name": "protocolFeeOwedB",
+            "type": "u64"
+          },
+          {
+            "name": "tokenMintA",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenVaultA",
+            "type": "pubkey"
+          },
+          {
+            "name": "feeGrowthGlobalA",
+            "type": "u128"
+          },
+          {
+            "name": "tokenMintB",
+            "type": "pubkey"
+          },
+          {
+            "name": "tokenVaultB",
+            "type": "pubkey"
+          },
+          {
+            "name": "feeGrowthGlobalB",
+            "type": "u128"
+          },
+          {
+            "name": "rewardLastUpdatedTimestamp",
+            "type": "u64"
+          },
+          {
+            "name": "rewardInfos",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "whirlpoolRewardInfo"
+                  }
+                },
+                3
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "whirlpoolRewardInfo",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "emissionsPerSecondX64",
+            "type": "u128"
+          },
+          {
+            "name": "growthGlobalX64",
+            "type": "u128"
           }
         ]
       }
