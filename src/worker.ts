@@ -233,7 +233,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
 
         for (const sig of signatures) {
-            log.info(TAG, "PostVaaOnSolana tx:", sig);
+            log.info(TAG, "Signature:", sig);
             await saveTxHash(
                 parsedVaa.emitterChain,
                 parsedVaa.emitterAddress.toString("hex"),
@@ -265,10 +265,25 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     log.debug(TAG, "Decoded payload vaultAddress:", vault.toBase58());
 
     try {
+        log.debug(TAG, "Receive...");
         const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
+        const signature = await sendTransaction(provider, [instruction1], payer);
+        log.info(TAG, "Signature:", signature);
+        await saveTxHash(
+            parsedVaa.emitterChain,
+            parsedVaa.emitterAddress.toString("hex"),
+            parsedVaa.sequence.toString(),
+            signature
+        );
+    } catch (error) {
+        throw new Error(`ExecuteReceive failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+
+    try {
+        log.debug(TAG, "Execute Deposit...");
         const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
-        const signature = await sendTransaction(provider, [instruction1, instruction2], payer);
-        log.info(TAG, "Transaction tx:", signature);
+        const signature = await sendTransaction(provider, [instruction2], payer);
+        log.info(TAG, "Signature:", signature);
         await saveTxHash(
             parsedVaa.emitterChain,
             parsedVaa.emitterAddress.toString("hex"),

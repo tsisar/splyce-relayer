@@ -8,7 +8,7 @@ import {
     CHAIN_ID_SOLANA,
     CHAIN_ID_SEPOLIA,
     CHAIN_ID_BSC,
-    ChainId,
+    ChainId
 } from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
 import { tryHexToNativeString } from "@certusone/wormhole-sdk/lib/cjs/utils/array";
 import { TokenBridgePayload } from "@certusone/wormhole-sdk";
@@ -19,19 +19,27 @@ import {
     WORMHOLE_RELAYER,
     WORMHOLE_RPC_ENDPOINT,
     REDIS_HOST,
-    REDIS_PORT, getStartingSequenceConfig,
+    REDIS_PORT,
+    getStartingSequenceConfig
 } from "./config/config";
 import { initPgStorage } from "./pg-storage/client";
 import { saveVaa } from "./pg-storage/vaa";
 import {
-    BNB_SMART_CHAIN_TOKEN_BRIDGE,
-    ETHEREUM_SEPOLIA_TOKEN_BRIDGE
+    ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
+    BNB_SMART_CHAIN_TOKEN_BRIDGE
 } from "./config/constants";
 
-import { error, warning, info } from "./notification/notification";
+import {
+    error,
+    warning,
+    info
+} from "./notification/notification";
 import { CustomConsoleTransport } from "./logger/custom-transport";
 import winston from "winston";
-import {initRedis, quitRedis} from "./redis/redis";
+import {
+    initRedis,
+    quitRedis
+} from "./redis/redis";
 
 export const winstonLogger = winston.createLogger({
     level: "debug",
@@ -40,7 +48,10 @@ export const winstonLogger = winston.createLogger({
 });
 
 const EMITTERS = [
-    { chainId: CHAIN_ID_SEPOLIA, address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE },
+    {
+        chainId: CHAIN_ID_SEPOLIA,
+        address: ETHEREUM_SEPOLIA_TOKEN_BRIDGE
+    },
     //{ chainId: CHAIN_ID_BSC, address: BNB_SMART_CHAIN_TOKEN_BRIDGE },
 ];
 
@@ -175,7 +186,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
                 await processVaa(vaaBase64);
             } catch (e) {
                 const message = e instanceof Error ? e.message : String(e);
-                await error(`Error processing VAA: ${message}\nSource Tx Hash: ${sourceTxHash}`);
+                await error(`Error processing VAA: ${message}\nSequence: ${sequence}\nSource Tx Hash: ${sourceTxHash}`);
                 throw new Error(`Error processing VAA: ${message}`);
             }
 
