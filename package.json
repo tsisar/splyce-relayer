@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "prepare-env": "ts-node scripts/use-env.ts",
+    "dev": "npm run prepare-env && ts-node src/index.ts",
+    "build": "npm run prepare-env && tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
     "recover": "ts-node src/recoverVaa.ts",
-    "build": "tsc",
     "watch": "tsc --watch"
   },
   "dependencies": {

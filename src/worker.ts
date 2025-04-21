@@ -1,5 +1,5 @@
 import {Connection, Keypair, PublicKey, TransactionInstruction} from "@solana/web3.js";
-import {ACCOUNTANT, PRIVATE_KEY, WORMHOLE_RELAYER} from "./config/config";
+import {ACCOUNTANT, PRIVATE_KEY} from "./config/config";
 import {Manager} from "./provider/manager"
 import {
     getIsTransferCompletedSolana, ParsedVaa,
@@ -26,7 +26,7 @@ import {
 import {ChainId} from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
 import {tryHexToNativeString} from "@certusone/wormhole-sdk/lib/cjs/utils/array";
 import {sendTransaction} from "./provider/transaction";
-import {WormholeRelayer} from "./types/wormhole_relayer";
+import {WormholeRelayer} from "../types/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
 import {SOLANA_CORE_BRIDGE, SOLANA_TOKEN_BRIDGE} from "./config/constants";
 import AsyncLock from "async-lock";
@@ -39,7 +39,6 @@ const TAG = "Worker";
 const ACCOUNTANT_PROGRAM_ID = new PublicKey(ACCOUNTANT);
 const TOKEN_BRIDGE_PROGRAM_ID = new PublicKey(SOLANA_TOKEN_BRIDGE);
 const CORE_BRIDGE_PROGRAM_ID = new PublicKey(SOLANA_CORE_BRIDGE);
-const WORMHOLE_RELAYER_PROGRAM_ID = new PublicKey(WORMHOLE_RELAYER);
 
 export function extractRawTokenTransferPayload(base64Vaa: string): string {
     const vaaBuffer = Buffer.from(base64Vaa, "base64");
@@ -163,7 +162,7 @@ async function buildExecuteDepositInstruction(
             Buffer.from("received"),
             parsedVaa.hash
         ],
-        WORMHOLE_RELAYER_PROGRAM_ID
+        wormholeProgram.programId
     );
     log.debug(TAG, `depositPDA expected: ${depositPDA.toBase58()}`);
 
@@ -222,12 +221,6 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     const targetAddress = tryHexToNativeString(transferPayload.targetAddress, targetChain);
     log.debug(TAG, "Target address:", targetAddress);
 
-    // Confirm that the destination is the relayer contract.
-    if (targetAddress != WORMHOLE_RELAYER) {
-        log.debug(TAG, "Destination is not the relayer contract");
-        return;
-    }
-
     // Post the VAA on chain.
     try {
         const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
@@ -265,8 +258,8 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     log.debug(TAG, "Decoded payload vaultAddress:", vault.toBase58());
 
     try {
-        log.debug(TAG, "Receive...");
         const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
+        log.info(TAG, "Sending transaction...");
         const signature = await sendTransaction(provider, [instruction1], payer);
         log.info(TAG, "Signature:", signature);
         await saveTxHash(
@@ -280,8 +273,8 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     }
 
     try {
-        log.debug(TAG, "Execute Deposit...");
         const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
+        log.info(TAG, "Sending transaction...");
         const signature = await sendTransaction(provider, [instruction2], payer);
         log.info(TAG, "Signature:", signature);
         await saveTxHash(

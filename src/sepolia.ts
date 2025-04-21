@@ -14,7 +14,7 @@ const WORMHOLE_CORE_ADDRESS = "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"; // o
 // Solana addresses
 const sharesRecipient = "G1XjoJpF6NvfSsbkreefjQgTf4JY7upUYABnGqWdozRi"; //"0xdf020f31ca795437bfa7365494a78a0de525098071fd55440f9a1a063f1035ad";
 const vaultAddress = "FaqoPQMz7d5bkdx7BWNW7F1iFP9JxEDdDHPf42XaDkU6"; //"0xd8aef6345ab567d48fa84fc351e1b26cff3577a8cf4663d291f064781504b49f";
-const targetContract = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5"; //"0x75c09f8e5c825380a835680486e01a767ee3ed2d0fa487aa04e44e8dfcc92a23"; // Solana program
+const targetContract = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
 const recipientChain = 1; // Solana
 const amount = ethers.utils.parseUnits("0.1", 6); // 0.1 USDC
 const batchId = 0;
@@ -59,12 +59,15 @@ async function main() {
         [1, solanaAddressToBytes32(sharesRecipient), solanaAddressToBytes32(vaultAddress)]
     );
 
+    const recipient = solanaAddressToBytes32(targetContract);
+    console.log("Recipient:", recipient);
+
     // Send tokens with payload
     const tx = await tokenBridge.transferTokensWithPayload(
         TOKEN_ADDRESS,
         amount,
         recipientChain,
-        solanaAddressToBytes32(targetContract),
+        recipient,
         batchId,
         payload,
         { value: fee }

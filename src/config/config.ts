@@ -1,14 +1,13 @@
+import * as fs from 'fs';
 import * as dotenv from "dotenv";
 
 dotenv.config();
 
 // const rawIdl = fs.readFileSync("../idl/wormhole_relayer.json", "utf-8");
 // const idl = JSON.parse(rawIdl);
-//
-// export const WORMHOLE_RELAYER = idl.address;
 
 // Address of the relayer contract on Solana
-export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "";
+export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
 // Accountant address for vault
 export const ACCOUNTANT = process.env.ACCOUNTANT || "EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7";
 

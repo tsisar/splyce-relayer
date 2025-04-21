@@ -2,8 +2,8 @@ import {AnchorProvider, Program, Wallet, Idl, Provider} from "@coral-xyz/anchor"
 import { Connection, Keypair } from "@solana/web3.js";
 import { CONFIRM_TIMEOUT, PRODUCTION, SOLANA_RPC_ENDPOINT } from "../config/config";
 import {log} from "../logger/logger"
-import {WormholeRelayer} from "../types/wormhole_relayer";
-import IDL from "../idl/wormhole_relayer.json";
+import {WormholeRelayer} from "../../types/wormhole_relayer";
+import IDL from "../../idls/wormhole_relayer.json";
 
 const TAG = "ProviderManager";
 
