@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { pgPool } from "./pg-storage/client";
 import { recoverVaa } from "./recoverVaa";
+import {getTxHashesForVaa} from "./pg-storage/vaa";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +37,26 @@ app.get("/api/vaas", async (_req, res) => {
     } catch (err) {
         console.error("Error fetching VAAs:", err);
         res.status(500).json({ error: "Failed to fetch VAAs" });
+    }
+});
+
+app.get("/api/vaa-tx", async (_req, res) => {
+    const { emitterChain, emitterAddress, sequence } = _req.query;
+
+    if (!emitterChain || !emitterAddress || !sequence) {
+        res.status(400).json({ error: "Missing query parameters" });
+    } else {
+        try {
+            const txs = await getTxHashesForVaa(
+                Number(emitterChain),
+                String(emitterAddress),
+                String(sequence)
+            );
+            res.json({ txs });
+        } catch (e) {
+            console.error("Error fetching tx hashes:", e);
+            res.status(500).json({ error: "Internal error" });
+        }
     }
 });
 

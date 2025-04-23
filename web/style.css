@@ -29,3 +29,25 @@ td.status-completed {
     color: green;
     font-weight: 600;
 }
+
+#txModalBody {
+    overflow-x: auto;
+}
+
+#txModalBody ul {
+    white-space: nowrap;
+    padding-left: 1rem;
+    margin-bottom: 0;
+}
+
+#txModalBody li {
+    list-style: none;
+    margin-bottom: 0.25rem;
+}
+
+#txModalBody a {
+    font-family: monospace;
+    font-size: 0.85em;
+    display: inline-block;
+    min-width: 100%;
+}

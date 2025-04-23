@@ -25,9 +25,32 @@ async function loadVaas() {
           <td>${new Date(v.created_at).toLocaleString()}</td>
           <td class="${statusClass}">${v.status}</td>
           <td><button class="btn btn-sm btn-outline-secondary retry-btn">Retry</button></td>
+          <td><button class="btn btn-sm btn-outline-primary tx-btn">Transactions</button></td>
         `;
 
         tbody.appendChild(tr);
+
+        tr.querySelector(".tx-btn").addEventListener("click", async (e) => {
+            e.stopPropagation();
+
+            const res = await fetch(`/api/vaa-tx?emitterChain=${v.emitter_chain}&emitterAddress=${v.emitter}&sequence=${v.sequence}`);
+            const json = await res.json();
+
+            if (res.ok && json.txs?.length) {
+                const links = json.txs
+                    .map(tx => `<li><a href="https://explorer.solana.com/tx/${tx}?cluster=devnet" target="_blank">${tx}</a></li>`)
+                    .join("");
+
+                const html = `<div>
+            <h5>Transaction Hashes:</h5>
+            <ul>${links}</ul>
+        </div>`;
+
+                showModal(html);
+            } else {
+                showModal("<p>No transactions found for this VAA.</p>");
+            }
+        });
 
         tr.querySelector(".retry-btn").addEventListener("click", (e) => {
             e.stopPropagation(); // щоб не відкривалося wormholescan
@@ -49,6 +72,12 @@ async function loadVaas() {
             });
         });
     }
+}
+
+function showModal(html) {
+    document.getElementById("txModalBody").innerHTML = html;
+    const modal = new bootstrap.Modal(document.getElementById("txModal"));
+    modal.show();
 }
 
 document.addEventListener("DOMContentLoaded", loadVaas);
