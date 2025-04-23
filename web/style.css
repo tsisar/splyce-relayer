@@ -1,7 +1,31 @@
 body {
     font-family: system-ui, sans-serif;
 }
+
 code {
     font-size: 0.9em;
     word-break: break-all;
+}
+
+tr.clickable-row {
+    cursor: pointer;
+}
+
+tr.clickable-row:hover {
+    background-color: #e9ecef;
+}
+
+td.status-received{
+    color: orange;
+    font-weight: 600;
+}
+
+td.status-failed {
+    color: red;
+    font-weight: 600;
+}
+
+td.status-completed {
+    color: green;
+    font-weight: 600;
 }

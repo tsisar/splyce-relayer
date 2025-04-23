@@ -6,22 +6,15 @@ import {WORMHOLE_RPC_ENDPOINT} from "./config/config";
 import {getLatestSequence} from "./pg-storage/vaa";
 import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
-const emitterChain = CHAIN_ID_SEPOLIA; // Sepolia
-const sequence = 4742;
-const emitterAddress = tryNativeToHexString(
-    ETHEREUM_SEPOLIA_TOKEN_BRIDGE,
-    emitterChain
-); // Token Bridge address in hex
-
-const endpoints = [
-    `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
-];
-
 const TAG = "recoverVaa";
 
-async function fetchVaa() {
+export async function recoverVaa(emitterChain: number, emitterAddress: string, sequence: string) {
     const latestSequence: string | null = await getLatestSequence(emitterChain, emitterAddress);
     log.info(TAG, `Latest saved sequence for ${emitterChain}/${emitterAddress}: ${latestSequence}`);
+
+    const endpoints = [
+        `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
+    ];
 
     for (const url of endpoints) {
         try {
@@ -38,7 +31,7 @@ async function fetchVaa() {
                 log.debug(TAG, "base64 data:", base64);
 
                 // PROCESS VAA
-                await processVaa(base64);
+                await processVaa(emitterChain, emitterAddress, sequence.toString(), base64);
 
                 return base64;
             }
@@ -51,7 +44,3 @@ async function fetchVaa() {
 
     throw new Error("Could not fetch VAA from any endpoint.");
 }
-
-fetchVaa().then((vaa) => {
-    log.debug(TAG, "Final VAA buffer length:", vaa.length);
-}).catch(console.error);

@@ -1,5 +1,11 @@
-import { Pool } from "pg";
-import {POSTGRES_DB, POSTGRES_HOST, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_USER} from "../config/config";
+import {Pool} from "pg";
+import {
+    POSTGRES_DB,
+    POSTGRES_HOST,
+    POSTGRES_PASSWORD,
+    POSTGRES_PORT,
+    POSTGRES_USER
+} from "../config/config";
 
 export const pgPool = new Pool({
     user: POSTGRES_USER,
@@ -17,6 +23,7 @@ export async function initPgStorage() {
             emitter_address TEXT    NOT NULL,
             sequence        TEXT    NOT NULL,
             vaa_base64      TEXT    NOT NULL,
+--             status          TEXT    NOT NULL DEFAULT 'received' CHECK (status IN ('received', 'failed', 'completed')),
             PRIMARY KEY (emitter_chain, emitter_address, sequence)
         );
 
@@ -32,5 +39,10 @@ export async function initPgStorage() {
                 REFERENCES vaa_storage (emitter_chain, emitter_address, sequence)
                 ON DELETE CASCADE
         );
+    `);
+
+    await pgPool.query(`
+        ALTER TABLE vaa_storage
+            ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'received';
     `);
 }

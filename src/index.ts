@@ -183,7 +183,7 @@ const logVaaDetails = (ctx: StandardRelayerContext): void => {
             ctx.logger.info(`Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
             try {
-                await processVaa(vaaBase64);
+                await processVaa(emitterChain, emitterAddress, sequence, vaaBase64);
             } catch (e) {
                 const message = e instanceof Error ? e.message : String(e);
                 await error(`Error processing VAA: ${message}\nSequence: ${sequence}\nSource Tx Hash: ${sourceTxHash}`);

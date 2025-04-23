@@ -30,7 +30,7 @@ import {WormholeRelayer} from "../types/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
 import {SOLANA_CORE_BRIDGE, SOLANA_TOKEN_BRIDGE} from "./config/constants";
 import AsyncLock from "async-lock";
-import {saveTxHash} from "./pg-storage/vaa";
+import {saveTxHash, updateVaaStatus} from "./pg-storage/vaa";
 
 export const lock = new AsyncLock();
 
@@ -313,15 +313,18 @@ function getBotKeypair(): Keypair {
     return Keypair.fromSecretKey(Uint8Array.from(privateKeyArray));
 }
 
-export async function processVaa(vaa: string): Promise<void> {
+
+export async function processVaa(emitterChain: number, emitterAddress: string, sequence: string, vaa: string): Promise<void> {
     const payer = getBotKeypair();
     const manager = new Manager(payer);
 
     await lock.acquire("signing-lock", async () => {
         try {
             await relay(manager, payer, vaa);
+            await updateVaaStatus(emitterChain, emitterAddress, sequence, "completed");
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
+            await updateVaaStatus(emitterChain, emitterAddress, sequence, "failed");
             throw new Error(`VAA processing failed: ${message}`);
         }
     });
