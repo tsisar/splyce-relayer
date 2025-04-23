@@ -24,6 +24,7 @@ export async function initPgStorage() {
             sequence        TEXT    NOT NULL,
             vaa_base64      TEXT    NOT NULL,
 --             status          TEXT    NOT NULL DEFAULT 'received' CHECK (status IN ('received', 'failed', 'completed')),
+--             created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
             PRIMARY KEY (emitter_chain, emitter_address, sequence)
         );
 
@@ -44,5 +45,10 @@ export async function initPgStorage() {
     await pgPool.query(`
         ALTER TABLE vaa_storage
             ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'received';
+    `);
+
+    await pgPool.query(`
+        ALTER TABLE vaa_storage
+            ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT NOW();
     `);
 }

@@ -22,10 +22,10 @@ async function loadVaas() {
           <td>${v.emitter_chain}</td>
           <td><code>${v.emitter}</code></td>
           <td>${v.sequence}</td>
-          <td>${new Date(v.created_at).toLocaleString()}</td>
+          <td title="${v.created_at}">${new Date(v.created_at).toLocaleString()}</td>
           <td class="${statusClass}">${v.status}</td>
-          <td><button class="btn btn-sm btn-outline-secondary retry-btn">Retry</button></td>
           <td><button class="btn btn-sm btn-outline-primary tx-btn">Transactions</button></td>
+          <td><button class="btn btn-sm btn-outline-secondary retry-btn">Retry</button></td>
         `;
 
         tbody.appendChild(tr);

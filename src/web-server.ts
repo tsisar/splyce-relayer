@@ -13,9 +13,9 @@ app.use("/", express.static(path.join(__dirname, "../web")));
 app.get("/api/vaas", async (_req, res) => {
     try {
         const result = await pgPool.query(`
-            SELECT emitter_chain, emitter_address, sequence, status, CURRENT_TIMESTAMP AS created_at
+            SELECT emitter_chain, emitter_address, sequence, status, created_at
             FROM vaa_storage
-            ORDER BY sequence::numeric DESC
+            ORDER BY sequence DESC
             LIMIT 50
         `);
 
