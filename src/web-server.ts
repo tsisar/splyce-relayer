@@ -10,28 +10,23 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use("/", express.static(path.join(__dirname, "../web")));
 
-app.get("/api/vaas", async (_req, res) => {
+app.get("/api/vaas", async (req, res) => {
     try {
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = 20;
+        const offset = (page - 1) * limit;
+
         const result = await pgPool.query(`
             SELECT emitter_chain, emitter_address, sequence, status, created_at
             FROM vaa_storage
             ORDER BY sequence DESC
-            LIMIT 50
-        `);
+            LIMIT $1 OFFSET $2
+        `, [limit, offset]);
 
-        const enriched = result.rows.map((row) => {
-            let address = row.emitter_address;
-            // try {
-            //     address = tryHexToNativeString(row.emitter_address, row.emitter_chain) || row.emitter_address;
-            // } catch (e) {
-            //     log.error("WEB","Error converting address:", e);
-            // }
-
-            return {
-                ...row,
-                emitter: address,
-            };
-        });
+        const enriched = result.rows.map((row) => ({
+            ...row,
+            emitter: row.emitter_address,
+        }));
 
         res.json(enriched);
     } catch (err) {

@@ -1,6 +1,14 @@
-async function loadVaas() {
-    const res = await fetch("/api/vaas");
+let currentPage = 1;
+
+// Load VAAs for the given page
+async function loadVaas(page = 1) {
+    const res = await fetch(`/api/vaas?page=${page}`);
     const vaas = await res.json();
+    currentPage = page;
+
+    // Update current page label
+    document.getElementById("page-indicator").innerText = `Page ${page}`;
+
     const tbody = document.getElementById("vaa-tbody");
     tbody.innerHTML = "";
 
@@ -30,6 +38,7 @@ async function loadVaas() {
 
         tbody.appendChild(tr);
 
+        // Open transaction list modal
         tr.querySelector(".tx-btn").addEventListener("click", async (e) => {
             e.stopPropagation();
 
@@ -42,9 +51,9 @@ async function loadVaas() {
                     .join("");
 
                 const html = `<div>
-            <h5>Transaction Hashes:</h5>
-            <ul>${links}</ul>
-        </div>`;
+                    <h5>Transaction Hashes:</h5>
+                    <ul>${links}</ul>
+                </div>`;
 
                 showModal(html);
             } else {
@@ -52,11 +61,12 @@ async function loadVaas() {
             }
         });
 
+        // Retry VAA processing
         tr.querySelector(".retry-btn").addEventListener("click", (e) => {
-            e.stopPropagation(); // щоб не відкривалося wormholescan
+            e.stopPropagation();
             fetch("/api/recover-vaa", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     emitterChain: v.emitter_chain,
                     emitterAddress: v.emitter,
@@ -74,10 +84,20 @@ async function loadVaas() {
     }
 }
 
+// Show transaction list modal
 function showModal(html) {
     document.getElementById("txModalBody").innerHTML = html;
     const modal = new bootstrap.Modal(document.getElementById("txModal"));
     modal.show();
 }
 
-document.addEventListener("DOMContentLoaded", loadVaas);
+// Pagination buttons
+document.getElementById("prev-page").addEventListener("click", () => {
+    if (currentPage > 1) loadVaas(currentPage - 1);
+});
+
+document.getElementById("next-page").addEventListener("click", () => {
+    loadVaas(currentPage + 1);
+});
+
+document.addEventListener("DOMContentLoaded", () => loadVaas());
