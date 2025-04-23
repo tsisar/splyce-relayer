@@ -178,7 +178,7 @@ async function buildExecuteDepositInstruction(
         .instruction();
 }
 
-async function relay(manager: Manager, payer: Keypair, vaa: string) {
+async function relay(manager: Manager, payer: Keypair, vaa: string, force: boolean = false) {
     // Set up provider.
     const provider = await manager.getProvider();
     // Get the connection.
@@ -196,9 +196,12 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
     );
     if (isRedeemed) {
         log.debug(TAG, "VAA has already been redeemed");
-        return;
+        if (!force) {
+            return;
+        }
+    } else {
+        log.debug(TAG, "VAA has not been redeemed yet");
     }
-    log.debug(TAG, "VAA has not been redeemed yet");
 
     // Parse the VAA.
     const parsedVaa = parseVaa(signedVaa);
@@ -206,7 +209,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string) {
 
     // Make sure it's a payload 3.
     const payloadType = parsedVaa.payload.readUint8(0);
-    if (payloadType != 3) {
+    if (!force && payloadType != 3) {
         log.debug(TAG, "Not a payload 3");
         return;
     }
@@ -314,13 +317,13 @@ function getBotKeypair(): Keypair {
 }
 
 
-export async function processVaa(emitterChain: number, emitterAddress: string, sequence: string, vaa: string): Promise<void> {
+export async function processVaa(emitterChain: number, emitterAddress: string, sequence: string, vaa: string, force: boolean = false): Promise<void> {
     const payer = getBotKeypair();
     const manager = new Manager(payer);
 
     await lock.acquire("signing-lock", async () => {
         try {
-            await relay(manager, payer, vaa);
+            await relay(manager, payer, vaa, force);
             await updateVaaStatus(emitterChain, emitterAddress, sequence, "completed");
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);

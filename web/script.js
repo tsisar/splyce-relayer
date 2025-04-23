@@ -6,7 +6,6 @@ async function loadVaas(page = 1) {
     const vaas = await res.json();
     currentPage = page;
 
-    // Update current page label
     document.getElementById("page-indicator").innerText = `Page ${page}`;
 
     const tbody = document.getElementById("vaa-tbody");
@@ -78,20 +77,20 @@ async function loadVaas(page = 1) {
                 } else {
                     alert("Failed to trigger recovery");
                 }
-                setTimeout(() => window.location.reload(), 1000);
+                setTimeout(() => window.location.reload(), 500);
             });
         });
     }
 }
 
-// Show transaction list modal
+// Show Bootstrap modal with given HTML
 function showModal(html) {
     document.getElementById("txModalBody").innerHTML = html;
     const modal = new bootstrap.Modal(document.getElementById("txModal"));
     modal.show();
 }
 
-// Pagination buttons
+// Pagination controls
 document.getElementById("prev-page").addEventListener("click", () => {
     if (currentPage > 1) loadVaas(currentPage - 1);
 });
@@ -100,4 +99,55 @@ document.getElementById("next-page").addEventListener("click", () => {
     loadVaas(currentPage + 1);
 });
 
+// Open and populate manual fetch modal with the latest VAA
+document.getElementById("manual-fetch").addEventListener("click", async () => {
+    const modalElement = document.getElementById("manualFetchModal");
+    const form = document.getElementById("manual-fetch-form");
+
+    try {
+        const res = await fetch("/api/vaas?page=1");
+        const vaas = await res.json();
+        const latest = vaas[0];
+
+        if (latest) {
+            form.emitterChain.value = latest.emitter_chain;
+            form.emitterAddress.value = latest.emitter;
+            form.sequence.value = latest.sequence;
+        }
+    } catch (err) {
+        console.warn("Failed to fetch latest VAA:", err);
+    }
+
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+});
+
+// Handle manual fetch form submission
+document.getElementById("manual-fetch-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const emitterChain = form.emitterChain.value.trim();
+    const emitterAddress = form.emitterAddress.value.trim();
+    const sequence = form.sequence.value.trim();
+    const force = true;
+
+    const res = await fetch("/api/recover-vaa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emitterChain, emitterAddress, sequence, force }),
+    });
+
+    const modal = bootstrap.Modal.getInstance(document.getElementById("manualFetchModal"));
+    modal.hide();
+
+    if (res.ok) {
+        alert("Manual fetch triggered");
+    } else {
+        alert("Failed to trigger manual fetch");
+    }
+    setTimeout(() => window.location.reload(), 500);
+});
+
+// Initial load
 document.addEventListener("DOMContentLoaded", () => loadVaas());

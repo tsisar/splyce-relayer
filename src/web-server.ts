@@ -1,8 +1,8 @@
 import express from "express";
 import path from "path";
 import { pgPool } from "./pg-storage/client";
-import { recoverVaa } from "./recoverVaa";
-import {getTxHashesForVaa} from "./pg-storage/vaa";
+import { recoverVaa } from "./recover-vaa";
+import { getTxHashesForVaa } from "./pg-storage/vaa";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,9 +56,9 @@ app.get("/api/vaa-tx", async (_req, res) => {
 });
 
 app.post("/api/recover-vaa", async (req, res) => {
-    const { emitterChain, emitterAddress, sequence } = req.body;
+    const { emitterChain, emitterAddress, sequence, force } = req.body;
     try {
-        await recoverVaa(Number(emitterChain), String(emitterAddress), String(sequence));
+        await recoverVaa(Number(emitterChain), String(emitterAddress), String(sequence), Boolean(force));
         res.status(200).json({ ok: true });
     } catch (e) {
         console.error("Recovery failed:", e);

@@ -8,9 +8,8 @@ import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
 const TAG = "recoverVaa";
 
-export async function recoverVaa(emitterChain: number, emitterAddress: string, sequence: string) {
-    const latestSequence: string | null = await getLatestSequence(emitterChain, emitterAddress);
-    log.info(TAG, `Latest saved sequence for ${emitterChain}/${emitterAddress}: ${latestSequence}`);
+export async function recoverVaa(emitterChain: number, emitterAddress: string, sequence: string, force: boolean = false): Promise<string> {
+    log.info(TAG, `Recovering VAA for emitterChain: ${emitterChain}, emitterAddress: ${emitterAddress}, sequence: ${sequence}`);
 
     const endpoints = [
         `${WORMHOLE_RPC_ENDPOINT}/v1/signed_vaa/${emitterChain}/${emitterAddress}/${sequence}`
@@ -31,7 +30,7 @@ export async function recoverVaa(emitterChain: number, emitterAddress: string, s
                 log.debug(TAG, "base64 data:", base64);
 
                 // PROCESS VAA
-                await processVaa(emitterChain, emitterAddress, sequence.toString(), base64);
+                await processVaa(emitterChain, emitterAddress, sequence.toString(), base64, force);
 
                 return base64;
             }
