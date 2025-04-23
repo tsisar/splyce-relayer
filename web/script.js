@@ -63,6 +63,7 @@ async function loadVaas(page = 1) {
         // Retry VAA processing
         tr.querySelector(".retry-btn").addEventListener("click", (e) => {
             e.stopPropagation();
+            showLoading();
             fetch("/api/recover-vaa", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -77,6 +78,7 @@ async function loadVaas(page = 1) {
                 } else {
                     alert("Failed to trigger recovery");
                 }
+                hideLoading();
                 setTimeout(() => window.location.reload(), 500);
             });
         });
@@ -125,6 +127,7 @@ document.getElementById("manual-fetch").addEventListener("click", async () => {
 // Handle manual fetch form submission
 document.getElementById("manual-fetch-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    showLoading();
 
     const form = e.target;
     const emitterChain = form.emitterChain.value.trim();
@@ -146,8 +149,17 @@ document.getElementById("manual-fetch-form").addEventListener("submit", async (e
     } else {
         alert("Failed to trigger manual fetch");
     }
+    hideLoading();
     setTimeout(() => window.location.reload(), 500);
 });
 
 // Initial load
 document.addEventListener("DOMContentLoaded", () => loadVaas());
+
+function showLoading() {
+    document.getElementById("loading-overlay").classList.remove("d-none");
+}
+
+function hideLoading() {
+    document.getElementById("loading-overlay").classList.add("d-none");
+}
