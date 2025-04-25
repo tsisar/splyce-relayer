@@ -10,7 +10,8 @@ dotenv.config();
 // const idl = JSON.parse(rawIdl);
 
 // Environment configuration
-export const PRODUCTION = process.env.ENVIRONMENT === "prod" || false;
+export const ENVIRONMENT = process.env.ENVIRONMENT || "dev"; // "prod" or "dev"
+export const PRODUCTION = ENVIRONMENT === "prod" || false;
 
 export const TOKEN_BRIDGE_PROGRAM = PRODUCTION ? WORMHOLE.PROD.TOKEN_BRIDGES.SOLANA : WORMHOLE.DEV.TOKEN_BRIDGES.SOLANA;
 export const CORE_BRIDGE_PROGRAM = PRODUCTION ? WORMHOLE.PROD.CORE_BRIDGE.SOLANA : WORMHOLE.DEV.CORE_BRIDGE.SOLANA;

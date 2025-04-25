@@ -3,6 +3,7 @@ import path from "path";
 import { pgPool } from "./pg-storage/client";
 import { recoverVaa } from "./recover-vaa";
 import { getTxHashesForVaa } from "./pg-storage/vaa";
+import {ENVIRONMENT} from "./config/config";
 
 export function startWebServer() {
     const app = express();
@@ -82,6 +83,10 @@ export function startWebServer() {
             console.error("Recovery failed:", e);
             res.status(500).json({ error: "Recovery failed" });
         }
+    });
+
+    app.get("/env", (req, res) => {
+        res.json({ environment: ENVIRONMENT });
     });
 
     app.listen(PORT, () => {

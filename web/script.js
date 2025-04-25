@@ -1,4 +1,15 @@
 let currentPage = 1;
+let environment = "dev";
+
+async function loadEnvironment() {
+    try {
+        const res = await fetch("/env");
+        const data = await res.json();
+        environment = data.environment;
+    } catch (err) {
+        console.warn("Failed to load environment config, defaulting to devnet", err);
+    }
+}
 
 // Load VAAs for the given page
 async function loadVaas(page = 1) {
@@ -12,7 +23,8 @@ async function loadVaas(page = 1) {
     tbody.innerHTML = "";
 
     for (const v of vaas) {
-        const link = `https://wormholescan.io/#/tx/${v.emitter_chain}/${v.emitter}/${v.sequence}?network=Testnet`;
+        const network = environment === "prod" ? "Mainnet" : "Testnet";
+        const link = `https://wormholescan.io/#/tx/${v.emitter_chain}/${v.emitter}/${v.sequence}?network=${network}`;
 
         const tr = document.createElement("tr");
         tr.classList.add("clickable-row");
@@ -46,7 +58,7 @@ async function loadVaas(page = 1) {
 
             if (res.ok && json.txs?.length) {
                 const links = json.txs
-                    .map(tx => `<li><a href="https://explorer.solana.com/tx/${tx}?cluster=devnet" target="_blank">${tx}</a></li>`)
+                    .map(tx => `<li><a href="https://explorer.solana.com/tx/${tx}?cluster=${environment === "prod" ? "mainnet-beta" : "devnet"}" target="_blank">${tx}</a></li>`)
                     .join("");
 
                 const html = `<div>
