@@ -64,3 +64,180 @@ td.status-completed {
     align-items: center;
     z-index: 2000;
 }
+
+.flat-arrow-btn {
+    background: transparent;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.flat-arrow-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.flat-arrow-btn:active {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.flat-arrow-btn .icon {
+    width: 24px;
+    height: 24px;
+    color: #333;
+    transition: color 0.2s ease;
+}
+
+.flat-arrow-btn:hover .icon {
+    color: #000;
+}
+
+.btn-fetch {
+    width: 50px;
+    height: 50px;
+    border: 1px solid rgb(214, 214, 214);
+    border-radius: 5px;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition-duration: 0.3s;
+    /*box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.11);*/
+}
+
+.svgIcon {
+    fill: rgb(70, 70, 70);
+}
+
+.icon2 {
+    width: 18px;
+    height: 5px;
+    border-bottom: 2px solid rgb(70, 70, 70);
+    border-left: 2px solid rgb(70, 70, 70);
+    border-right: 2px solid rgb(70, 70, 70);
+}
+
+.btn-fetch:hover {
+    background-color: rgb(51, 51, 51);
+    transition-duration: 0.3s;
+}
+
+.btn-fetch:hover .icon2 {
+    border-bottom: 2px solid rgb(235, 235, 235);
+    border-left: 2px solid rgb(235, 235, 235);
+    border-right: 2px solid rgb(235, 235, 235);
+}
+
+.btn-fetch:hover .svgIcon {
+    fill: rgb(255, 255, 255);
+    animation: slide-in-top 1s linear infinite;
+}
+
+@keyframes slide-in-top {
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+.position-relative {
+    position: relative;
+}
+
+.tooltip-custom {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 130%; /* Підняти над кнопкою */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.position-relative:hover .tooltip-custom {
+    visibility: visible;
+    opacity: 1;
+}
+
+.test-transfer-link {
+    color: #5f5f5f;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.test-transfer-link:hover {
+    color: #4080ff;
+    text-decoration: underline;
+}
+
+/* From Uiverse.io by cosnametv */
+.loader {
+    --color: #a5a5b0;
+    --size: 70px;
+    width: var(--size);
+    height: var(--size);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+.loader span {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color);
+    animation: keyframes-blink 0.6s alternate infinite linear;
+}
+
+.loader span:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.loader span:nth-child(2) {
+    animation-delay: 200ms;
+}
+
+.loader span:nth-child(3) {
+    animation-delay: 300ms;
+}
+
+.loader span:nth-child(4) {
+    animation-delay: 400ms;
+}
+
+.loader span:nth-child(5) {
+    animation-delay: 500ms;
+}
+
+.loader span:nth-child(6) {
+    animation-delay: 600ms;
+}
+
+@keyframes keyframes-blink {
+    0% {
+        opacity: 0.3;
+        transform: scale(0.5) rotate(5deg);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

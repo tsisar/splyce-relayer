@@ -11,111 +11,108 @@ async function loadEnvironment() {
     }
 }
 
-// Load VAAs for the given page
 async function loadVaas(page = 1) {
-    const res = await fetch(`/api/vaas?page=${page}`);
-    const vaas = await res.json();
-    currentPage = page;
+    showLoading();
 
-    document.getElementById("page-indicator").innerText = `Page ${page}`;
+    try {
+        const res = await fetch(`/api/vaas?page=${page}`);
+        const vaas = await res.json();
+        currentPage = page;
 
-    const tbody = document.getElementById("vaa-tbody");
-    tbody.innerHTML = "";
+        document.getElementById("page-indicator").innerText = `Page ${page}`;
 
-    for (const v of vaas) {
-        const network = environment === "prod" ? "Mainnet" : "Testnet";
-        const link = `https://wormholescan.io/#/tx/${v.emitter_chain}/${v.emitter}/${v.sequence}?network=${network}`;
+        const tbody = document.getElementById("vaa-tbody");
+        tbody.innerHTML = "";
 
-        const tr = document.createElement("tr");
-        tr.classList.add("clickable-row");
-        tr.onclick = () => window.open(link, "_blank");
+        for (const v of vaas) {
+            const network = environment === "prod" ? "Mainnet" : "Testnet";
+            const link = `https://wormholescan.io/#/tx/${v.emitter_chain}/${v.emitter}/${v.sequence}?network=${network}`;
 
-        const status = (v.status || "").toLowerCase();
-        const statusClass = {
-            received: "status-received",
-            failed: "status-failed",
-            completed: "status-completed"
-        }[status] || "";
+            const tr = document.createElement("tr");
+            tr.classList.add("clickable-row");
+            tr.onclick = () => window.open(link, "_blank");
 
-        tr.innerHTML = `
-          <td>${v.emitter_chain}</td>
-          <td><code>${v.emitter}</code></td>
-          <td>${v.sequence}</td>
-          <td title="${v.created_at}">${new Date(v.created_at).toLocaleString()}</td>
-          <td class="${statusClass}">${v.status}</td>
-          <td><button class="btn btn-sm btn-outline-primary tx-btn">Transactions</button></td>
-          <td><button class="btn btn-sm btn-outline-secondary retry-btn">Retry</button></td>
-        `;
+            const status = (v.status || "").toLowerCase();
+            let statusIcon = "";
 
-        tbody.appendChild(tr);
+            if (status === "completed") {
+                statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="green" viewBox="0 0 24 24"><path d="M20.285 2.859l-11.285 11.285-5.285-5.285-3.715 3.715 9 9 15-15z"/></svg>`;
+            } else if (status === "failed") {
+                statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" stroke="red" stroke-width="3.5" fill="none" viewBox="0 0 24 24"><path d="M6 6l12 12M6 18L18 6" /></svg>`;
+            } else {
+                statusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="gray" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="none"/></svg>`;
+            }
 
-        // Open transaction list modal
-        tr.querySelector(".tx-btn").addEventListener("click", async (e) => {
-            e.stopPropagation();
+            tr.innerHTML = `
+              <td>${v.emitter_chain}</td>
+              <td>${v.emitter}</td>
+              <td>${v.sequence}</td>
+              <td title="${v.created_at}">${new Date(v.created_at).toLocaleString()}</td>
+              <td class="text-center">${statusIcon}</td>
+              <td><button class="btn btn-sm btn-outline-primary tx-btn">Transactions</button></td>
+              <td><button class="btn btn-sm btn-outline-secondary retry-btn">Retry</button></td>
+            `;
 
-            const res = await fetch(`/api/vaa-tx?emitterChain=${v.emitter_chain}&emitterAddress=${v.emitter}&sequence=${v.sequence}`);
-            const json = await res.json();
+            tbody.appendChild(tr);
 
-            if (res.ok && json.txs?.length) {
-                const links = json.txs
-                    .map(({ tx_hash, created_at }) => `
+            tr.querySelector(".tx-btn").addEventListener("click", async (e) => {
+                e.stopPropagation();
+                const res = await fetch(`/api/vaa-tx?emitterChain=${v.emitter_chain}&emitterAddress=${v.emitter}&sequence=${v.sequence}`);
+                const json = await res.json();
+
+                if (res.ok && json.txs?.length) {
+                    const links = json.txs.map(({ tx_hash, created_at }) => `
                         <li class="pb-2 mb-2 border-bottom">
                             <div class="d-flex flex-column">
                                 <a href="https://explorer.solana.com/tx/${tx_hash}?cluster=${environment === "prod" ? "mainnet-beta" : "devnet"}"
                                    class="text-break"
-                                   target="_blank">
-                                    ${tx_hash}
-                                </a>
+                                   target="_blank">${tx_hash}</a>
                                 <small class="text-muted">${new Date(created_at).toLocaleString()}</small>
                             </div>
                         </li>
-                    `)
-                    .join("");
+                    `).join("");
 
-                const html = `<div>
-                    <h5>Transaction Hashes:</h5>
-                    <ul>${links}</ul>
-                </div>`;
-
-                showModal(html);
-            } else {
-                showModal("<p>No transactions found for this VAA.</p>");
-            }
-        });
-
-        // Retry VAA processing
-        tr.querySelector(".retry-btn").addEventListener("click", (e) => {
-            e.stopPropagation();
-            showLoading();
-            fetch("/api/recover-vaa", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    emitterChain: v.emitter_chain,
-                    emitterAddress: v.emitter,
-                    sequence: v.sequence
-                })
-            }).then(res => {
-                if (res.ok) {
-                    alert("VAA recovery triggered");
+                    showModal(`<div><h5>Transaction Hashes:</h5><ul>${links}</ul></div>`);
                 } else {
-                    alert("Failed to trigger recovery");
+                    showModal("<p>No transactions found for this VAA.</p>");
                 }
-                hideLoading();
-                setTimeout(() => window.location.reload(), 500);
             });
-        });
+
+            tr.querySelector(".retry-btn").addEventListener("click", (e) => {
+                e.stopPropagation();
+                showLoading();
+                fetch("/api/recover-vaa", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        emitterChain: v.emitter_chain,
+                        emitterAddress: v.emitter,
+                        sequence: v.sequence
+                    })
+                }).then(res => {
+                    if (res.ok) {
+                        alert("VAA recovery triggered");
+                    } else {
+                        alert("Failed to trigger recovery");
+                    }
+                    hideLoading();
+                    setTimeout(() => window.location.reload(), 500);
+                });
+            });
+        }
+    } catch (err) {
+        console.error("Failed to load VAAs:", err);
+    } finally {
+        hideLoading();
     }
 }
 
-// Show Bootstrap modal with given HTML
 function showModal(html) {
     document.getElementById("txModalBody").innerHTML = html;
     const modal = new bootstrap.Modal(document.getElementById("txModal"));
     modal.show();
 }
 
-// Pagination controls
 document.getElementById("prev-page").addEventListener("click", () => {
     if (currentPage > 1) loadVaas(currentPage - 1);
 });
@@ -124,7 +121,6 @@ document.getElementById("next-page").addEventListener("click", () => {
     loadVaas(currentPage + 1);
 });
 
-// Open and populate manual fetch modal with the latest VAA
 document.getElementById("manual-fetch").addEventListener("click", async () => {
     const modalElement = document.getElementById("manualFetchModal");
     const form = document.getElementById("manual-fetch-form");
@@ -147,7 +143,6 @@ document.getElementById("manual-fetch").addEventListener("click", async () => {
     modal.show();
 });
 
-// Handle manual fetch form submission
 document.getElementById("manual-fetch-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     showLoading();
@@ -188,3 +183,7 @@ function showLoading() {
 function hideLoading() {
     document.getElementById("loading-overlay").classList.add("d-none");
 }
+
+document.getElementById("test-transfer").addEventListener("click", () => {
+    window.open("/test-transfer.html", "_blank");
+});

@@ -60,9 +60,27 @@
 <div class="container my-4">
     <h1 class="mb-4">Latest VAAs</h1>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-end align-items-center gap-2 mb-3">
         <div></div>
-        <button id="manual-fetch" class="btn btn-sm btn-outline-success">🔄 Manual Fetch</button>
+
+        <div class="position-relative d-inline-block">
+            <button id="manual-fetch" class="btn-fetch">
+                <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        height="1em"
+                        viewBox="0 0 384 512"
+                        class="svgIcon"
+                >
+                    <path
+                            d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32v306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+                    ></path>
+                </svg>
+                <span class="icon2"></span>
+            </button>
+
+            <div class="tooltip-custom">Manual Fetch</div>
+        </div>
+
     </div>
 
     <!-- VAA Table -->
@@ -84,17 +102,40 @@
     </table>
 
     <!-- Pagination controls -->
-    <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
-        <span id="page-indicator" class="me-2 text-muted">Page 1</span>
-        <button id="prev-page" class="btn btn-outline-secondary btn-sm">⬅️ Prev</button>
-        <button id="next-page" class="btn btn-outline-secondary btn-sm">Next ➡️</button>
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-4">
+        <button id="prev-page" class="flat-arrow-btn" title="Previous">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6" />
+            </svg>
+        </button>
+
+        <span id="page-indicator" class="text-muted fs-5">Page 1</span>
+
+        <button id="next-page" class="flat-arrow-btn" title="Next">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6" />
+            </svg>
+        </button>
+    </div>
+
+    <div class="d-flex justify-content-end align-items-center gap-3 mt-4">
+        <div id="test-transfer" class="test-transfer-link">
+            Test Transfer
+        </div>
     </div>
 </div>
 
 <!-- Loading overlay -->
 <div id="loading-overlay" class="d-none">
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+    <div class="loader">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
     </div>
 </div>
 
