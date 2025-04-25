@@ -1,10 +1,7 @@
 import axios from 'axios';
 import {processVaa} from "./worker";
 import {log} from "./logger/logger";
-import {CHAIN_ID_SEPOLIA, tryNativeToHexString} from "@certusone/wormhole-sdk";
 import {WORMHOLE_RPC_ENDPOINT} from "./config/config";
-import {getLatestSequence} from "./pg-storage/vaa";
-import {ETHEREUM_SEPOLIA_TOKEN_BRIDGE} from "./config/constants";
 
 const TAG = "recoverVaa";
 
@@ -41,5 +38,5 @@ export async function recoverVaa(emitterChain: number, emitterAddress: string, s
         }
     }
 
-    throw new Error("Could not fetch VAA from any endpoint.");
+    throw new Error("Failed to fetch VAA.");
 }

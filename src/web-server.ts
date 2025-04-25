@@ -4,43 +4,50 @@ import { pgPool } from "./pg-storage/client";
 import { recoverVaa } from "./recover-vaa";
 import { getTxHashesForVaa } from "./pg-storage/vaa";
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+export function startWebServer() {
+    const app = express();
+    const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use("/", express.static(path.join(__dirname, "../web")));
+    app.use(express.json());
 
-app.get("/api/vaas", async (req, res) => {
-    try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = 20;
-        const offset = (page - 1) * limit;
+    // Serve static web UI
+    app.use("/", express.static(path.join(__dirname, "../web")));
 
-        const result = await pgPool.query(`
-            SELECT emitter_chain, emitter_address, sequence, status, created_at
-            FROM vaa_storage
-            ORDER BY sequence DESC
-            LIMIT $1 OFFSET $2
-        `, [limit, offset]);
+    // Get paginated VAAs
+    app.get("/api/vaas", async (req, res) => {
+        try {
+            const page = parseInt(req.query.page as string) || 1;
+            const limit = 20;
+            const offset = (page - 1) * limit;
 
-        const enriched = result.rows.map((row) => ({
-            ...row,
-            emitter: row.emitter_address,
-        }));
+            const result = await pgPool.query(`
+                SELECT emitter_chain, emitter_address, sequence, status, created_at
+                FROM vaa_storage
+                ORDER BY sequence DESC
+                LIMIT $1 OFFSET $2
+            `, [limit, offset]);
 
-        res.json(enriched);
-    } catch (err) {
-        console.error("Error fetching VAAs:", err);
-        res.status(500).json({ error: "Failed to fetch VAAs" });
-    }
-});
+            const enriched = result.rows.map((row) => ({
+                ...row,
+                emitter: row.emitter_address,
+            }));
 
-app.get("/api/vaa-tx", async (_req, res) => {
-    const { emitterChain, emitterAddress, sequence } = _req.query;
+            res.json(enriched);
+        } catch (err) {
+            console.error("Error fetching VAAs:", err);
+            res.status(500).json({ error: "Failed to fetch VAAs" });
+        }
+    });
 
-    if (!emitterChain || !emitterAddress || !sequence) {
-        res.status(400).json({ error: "Missing query parameters" });
-    } else {
+    // Get transaction hashes for specific VAA
+    app.get("/api/vaa-tx", async (req, res) => {
+        const { emitterChain, emitterAddress, sequence } = req.query;
+
+        if (!emitterChain || !emitterAddress || !sequence) {
+            res.status(400).json({ error: "Missing query parameters" });
+            return;
+        }
+
         try {
             const txs = await getTxHashesForVaa(
                 Number(emitterChain),
@@ -52,20 +59,32 @@ app.get("/api/vaa-tx", async (_req, res) => {
             console.error("Error fetching tx hashes:", e);
             res.status(500).json({ error: "Internal error" });
         }
-    }
-});
+    });
 
-app.post("/api/recover-vaa", async (req, res) => {
-    const { emitterChain, emitterAddress, sequence, force } = req.body;
-    try {
-        await recoverVaa(Number(emitterChain), String(emitterAddress), String(sequence), Boolean(force));
-        res.status(200).json({ ok: true });
-    } catch (e) {
-        console.error("Recovery failed:", e);
-        res.status(500).json({ error: "Recovery failed" });
-    }
-});
+    // Trigger VAA recovery
+    app.post("/api/recover-vaa", async (req, res) => {
+        const { emitterChain, emitterAddress, sequence, force } = req.body;
 
-app.listen(PORT, () => {
-    console.log(`Web UI available at http://localhost:${PORT}`);
-});
+        if (!emitterChain || !emitterAddress || !sequence) {
+            res.status(400).json({ error: "Missing required fields" });
+            return;
+        }
+
+        try {
+            await recoverVaa(
+                Number(emitterChain),
+                String(emitterAddress),
+                String(sequence),
+                Boolean(force)
+            );
+            res.status(200).json({ ok: true });
+        } catch (e) {
+            console.error("Recovery failed:", e);
+            res.status(500).json({ error: "Recovery failed" });
+        }
+    });
+
+    app.listen(PORT, () => {
+        console.log(`Web UI available at http://localhost:${PORT}`);
+    });
+}

@@ -1,9 +1,9 @@
 import {AnchorProvider, Program, Wallet, Idl, Provider} from "@coral-xyz/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
-import { CONFIRM_TIMEOUT, PRODUCTION, SOLANA_RPC_ENDPOINT } from "../config/config";
+import { CONFIRM_TIMEOUT, SOLANA_RPC_ENDPOINT } from "../config/config";
 import {log} from "../logger/logger"
-import {WormholeRelayer} from "../../types/wormhole_relayer";
-import IDL from "../../idls/wormhole_relayer.json";
+import {WormholeRelayer} from "./programs/wormhole_relayer";
+import IDL from "./programs/wormhole_relayer.json";
 
 const TAG = "ProviderManager";
 
@@ -39,7 +39,6 @@ export class Manager {
         if (!this.provider) throw new Error("Provider is not initialized");
 
         log.debug(TAG, "Initializing program...");
-        log.debug(TAG, `Environment: ${PRODUCTION ? "PRODUCTION" : "DEVELOPMENT"}`);
 
         this.program = new Program(IDL as Idl, this.provider);
 

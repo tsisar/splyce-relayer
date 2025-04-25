@@ -1,10 +1,40 @@
 import * as fs from 'fs';
 import * as dotenv from "dotenv";
+import {WORMHOLE} from "./constants";
+import {CHAIN_ID_SEPOLIA, CHAIN_ID_BSC, CHAIN_ID_ETH} from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
+import {Environment} from "@wormhole-foundation/relayer-engine";
 
 dotenv.config();
 
 // const rawIdl = fs.readFileSync("../idl/wormhole_relayer.json", "utf-8");
 // const idl = JSON.parse(rawIdl);
+
+// Environment configuration
+export const PRODUCTION = process.env.ENVIRONMENT === "prod" || false;
+
+export const TOKEN_BRIDGE_PROGRAM = PRODUCTION ? WORMHOLE.PROD.TOKEN_BRIDGES.SOLANA : WORMHOLE.DEV.TOKEN_BRIDGES.SOLANA;
+export const CORE_BRIDGE_PROGRAM = PRODUCTION ? WORMHOLE.PROD.CORE_BRIDGE.SOLANA : WORMHOLE.DEV.CORE_BRIDGE.SOLANA;
+
+const EMITTERS_PROD = [
+    {
+        chainId: CHAIN_ID_ETH,
+        address: WORMHOLE.DEV.TOKEN_BRIDGES.ETHEREUM_SEPOLIA
+    },
+];
+
+const EMITTERS_DEV = [
+    {
+        chainId: CHAIN_ID_SEPOLIA,
+        address: WORMHOLE.PROD.TOKEN_BRIDGES.ETHEREUM
+    },
+    {
+        chainId: CHAIN_ID_BSC,
+        address: WORMHOLE.DEV.TOKEN_BRIDGES.BNB_SMART_CHAIN
+    },
+];
+
+export const EMITTERS = PRODUCTION ? EMITTERS_PROD : EMITTERS_DEV;
+export const WORMHOLE_ENVIRONMENT = PRODUCTION ? Environment.MAINNET : Environment.TESTNET;
 
 // Address of the relayer contract on Solana
 export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
@@ -28,9 +58,6 @@ export const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || "password";
 export const POSTGRES_DB = process.env.POSTGRES_DB || "relayer-db";
 export const POSTGRES_HOST = process.env.POSTGRES_HOST || "postgres";
 export const POSTGRES_PORT = Number(process.env.POSTGRES_PORT) || 5432;
-
-// Environment configuration
-export const PRODUCTION = process.env.ENVIRONMENT === "prod" || false;
 
 // Worker configuration
 export const PRIVATE_KEY = process.env.PRIVATE_KEY
