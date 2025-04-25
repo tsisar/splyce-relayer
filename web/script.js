@@ -58,7 +58,18 @@ async function loadVaas(page = 1) {
 
             if (res.ok && json.txs?.length) {
                 const links = json.txs
-                    .map(tx => `<li><a href="https://explorer.solana.com/tx/${tx}?cluster=${environment === "prod" ? "mainnet-beta" : "devnet"}" target="_blank">${tx}</a></li>`)
+                    .map(({ tx_hash, created_at }) => `
+                        <li class="pb-2 mb-2 border-bottom">
+                            <div class="d-flex flex-column">
+                                <a href="https://explorer.solana.com/tx/${tx_hash}?cluster=${environment === "prod" ? "mainnet-beta" : "devnet"}"
+                                   class="text-break"
+                                   target="_blank">
+                                    ${tx_hash}
+                                </a>
+                                <small class="text-muted">${new Date(created_at).toLocaleString()}</small>
+                            </div>
+                        </li>
+                    `)
                     .join("");
 
                 const html = `<div>
@@ -165,8 +176,10 @@ document.getElementById("manual-fetch-form").addEventListener("submit", async (e
     setTimeout(() => window.location.reload(), 500);
 });
 
-// Initial load
-document.addEventListener("DOMContentLoaded", () => loadVaas());
+document.addEventListener("DOMContentLoaded", async () => {
+    await loadEnvironment();
+    loadVaas();
+});
 
 function showLoading() {
     document.getElementById("loading-overlay").classList.remove("d-none");

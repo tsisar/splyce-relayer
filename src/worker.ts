@@ -200,23 +200,29 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
     const wormholeProgram = await manager.getProgram();
     // Get signed VAA.
     const signedVaa = Buffer.from(vaa, "base64")
+    // Parse the VAA.
+    const parsedVaa = parseVaa(signedVaa);
+    // Get VAA progress
+    const emitterAddressHex = parsedVaa.emitterAddress.toString("hex");
+    const progress = await getVaaProgress(parsedVaa.emitterChain, emitterAddressHex, parsedVaa.sequence.toString());
+    log.warn(TAG, "VAA progress:", progress.toString());
 
-    // Check to see if the VAA has been redeemed already.
-    const isRedeemed = await getIsTransferCompletedSolana(
-        new PublicKey(TOKEN_BRIDGE_PROGRAM_ID.toBase58()),
-        signedVaa,
-        connection
-    );
-
-    log.debug(TAG, `VAA has ${isRedeemed ? "already" : "not"} been redeemed${isRedeemed && !force ? " — skipping" : ""}`);
-
-    if (isRedeemed && !force) {
+    if (!force && progress == VaaProgress.DEPOSITED) {
+        log.debug(TAG, "VAA already deposited");
         return;
     }
 
-    // Parse the VAA.
-    const parsedVaa = parseVaa(signedVaa);
-    // log.debug(TAG, "Parsed VAA:", parsedVaa);
+    // // Check to see if the VAA has been redeemed already.
+    // const isRedeemed = await getIsTransferCompletedSolana(
+    //     new PublicKey(TOKEN_BRIDGE_PROGRAM_ID.toBase58()),
+    //     signedVaa,
+    //     connection
+    // );
+    //
+    // log.debug(TAG, `VAA has ${isRedeemed ? "already" : "not"} been redeemed${isRedeemed && !force ? " — skipping" : ""}`);
+    // if (!force && isRedeemed) {
+    //     return;
+    // }
 
     // Make sure it's a payload 3.
     const payloadType = parsedVaa.payload.readUint8(0);
@@ -234,12 +240,6 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
 
     const targetAddress = tryHexToNativeString(transferPayload.targetAddress, targetChain);
     log.debug(TAG, "Target address:", targetAddress);
-
-    const emitterAddressHex = parsedVaa.emitterAddress.toString("hex");
-
-    // Get VAA progress
-    const progress = await getVaaProgress(parsedVaa.emitterChain, emitterAddressHex, parsedVaa.sequence.toString());
-    log.warn(TAG, "VAA progress:", progress.toString());
 
     if (progress < VaaProgress.POSTED_TO_CHAIN) {
         // Post the VAA on chain.

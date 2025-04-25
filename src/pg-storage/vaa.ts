@@ -122,15 +122,16 @@ export async function getTxHashesForVaa(
     emitterChain: number,
     emitterAddress: string,
     sequence: string
-): Promise<string[]> {
+): Promise<{ tx_hash: string; created_at: string }[]> {
     const query = `
-        SELECT tx_hash
+        SELECT tx_hash, created_at
         FROM transaction_hashes
-        WHERE emitter_chain = $1
-          AND emitter_address = $2
-          AND sequence = $3
+        WHERE emitter_chain = $1 AND emitter_address = $2 AND sequence = $3
         ORDER BY created_at ASC
     `;
     const result = await pgPool.query(query, [emitterChain, emitterAddress, sequence]);
-    return result.rows.map(row => row.tx_hash);
+    return result.rows.map(row => ({
+        tx_hash: row.tx_hash,
+        created_at: row.created_at,
+    }));
 }

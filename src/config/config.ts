@@ -19,19 +19,19 @@ export const CORE_BRIDGE_PROGRAM = PRODUCTION ? WORMHOLE.PROD.CORE_BRIDGE.SOLANA
 const EMITTERS_PROD = [
     {
         chainId: CHAIN_ID_ETH,
-        address: WORMHOLE.DEV.TOKEN_BRIDGES.ETHEREUM_SEPOLIA
+        address: WORMHOLE.PROD.TOKEN_BRIDGES.ETHEREUM
     },
 ];
 
 const EMITTERS_DEV = [
     {
         chainId: CHAIN_ID_SEPOLIA,
-        address: WORMHOLE.PROD.TOKEN_BRIDGES.ETHEREUM
+        address: WORMHOLE.DEV.TOKEN_BRIDGES.ETHEREUM_SEPOLIA
     },
-    {
-        chainId: CHAIN_ID_BSC,
-        address: WORMHOLE.DEV.TOKEN_BRIDGES.BNB_SMART_CHAIN
-    },
+    // {
+    //     chainId: CHAIN_ID_BSC,
+    //     address: WORMHOLE.DEV.TOKEN_BRIDGES.BNB_SMART_CHAIN
+    // },
 ];
 
 export const EMITTERS = PRODUCTION ? EMITTERS_PROD : EMITTERS_DEV;
