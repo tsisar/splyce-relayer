@@ -1,8 +1,8 @@
 import express from "express";
 import path from "path";
-import { pgPool } from "./pg-storage/client";
-import { recoverVaa } from "./recover-vaa";
-import { getTxHashesForVaa } from "./pg-storage/vaa";
+import {pgPool} from "./pg-storage/client";
+import {recoverVaa} from "./recover-vaa";
+import {getTxHashesForVaa} from "./pg-storage/vaa";
 import {ENVIRONMENT} from "./config/config";
 
 export function startWebServer() {
@@ -36,16 +36,16 @@ export function startWebServer() {
             res.json(enriched);
         } catch (err) {
             console.error("Error fetching VAAs:", err);
-            res.status(500).json({ error: "Failed to fetch VAAs" });
+            res.status(500).json({error: "Failed to fetch VAAs"});
         }
     });
 
     // Get transaction hashes for specific VAA
     app.get("/api/vaa-tx", async (req, res) => {
-        const { emitterChain, emitterAddress, sequence } = req.query;
+        const {emitterChain, emitterAddress, sequence} = req.query;
 
         if (!emitterChain || !emitterAddress || !sequence) {
-            res.status(400).json({ error: "Missing query parameters" });
+            res.status(400).json({error: "Missing query parameters"});
             return;
         }
 
@@ -55,19 +55,19 @@ export function startWebServer() {
                 String(emitterAddress),
                 String(sequence)
             );
-            res.json({ txs });
+            res.json({txs});
         } catch (e) {
             console.error("Error fetching tx hashes:", e);
-            res.status(500).json({ error: "Internal error" });
+            res.status(500).json({error: "Internal error"});
         }
     });
 
     // Trigger VAA recovery
     app.post("/api/recover-vaa", async (req, res) => {
-        const { emitterChain, emitterAddress, sequence, force } = req.body;
+        const {emitterChain, emitterAddress, sequence, postToChain, receive, deposit} = req.body;
 
         if (!emitterChain || !emitterAddress || !sequence) {
-            res.status(400).json({ error: "Missing required fields" });
+            res.status(400).json({error: "Missing required fields"});
             return;
         }
 
@@ -76,20 +76,24 @@ export function startWebServer() {
                 Number(emitterChain),
                 String(emitterAddress),
                 String(sequence),
-                Boolean(force)
+                Boolean(postToChain),
+                Boolean(receive),
+                Boolean(deposit)
             );
-            res.status(200).json({ ok: true });
+            res.status(200).json({ok: true});
         } catch (e) {
             console.error("Recovery failed:", e);
-            res.status(500).json({ error: "Recovery failed" });
+            res.status(500).json({error: "Recovery failed"});
         }
     });
 
     app.get("/env", (req, res) => {
-        res.json({ environment: ENVIRONMENT });
+        res.json({environment: ENVIRONMENT});
     });
 
     app.listen(PORT, () => {
         console.log(`Web UI available at http://localhost:${PORT}`);
     });
 }
+
+// TODO: Додати етап який потрібно опрацювати в ручний режим, чекбокси /пост /ресів /депозит

@@ -31,6 +31,23 @@
                         <label class="form-label">Sequence</label>
                         <input type="number" class="form-control" name="sequence" required>
                     </div>
+
+                    <!-- Checkboxes for stages -->
+                    <div class="mb-3">
+                        <label class="form-label">Stages to Process</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="stagePost" name="postToChain">
+                            <label class="form-check-label" for="stagePost">POST_TO_CHAIN</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="stageReceive" name="receive">
+                            <label class="form-check-label" for="stageReceive">RECEIV</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="stageDeposit" name="deposit">
+                            <label class="form-check-label" for="stageDeposit">DEPOSIT</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-primary">Fetch</button>

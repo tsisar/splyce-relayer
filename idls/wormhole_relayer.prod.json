@@ -1,5 +1,5 @@
 {
-  "address": "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5",
+  "address": "9tLc6Tt91mxiCsaN4KvVVxZen2HTUtTz3w2UfgqFArvT",
   "metadata": {
     "name": "wormhole_relayer",
     "version": "0.1.0",
@@ -1409,8 +1409,7 @@
           "writable": true
         },
         {
-          "name": "vault",
-          "writable": true
+          "name": "vault"
         },
         {
           "name": "underlying_mint",
@@ -1585,7 +1584,7 @@
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -2006,7 +2005,7 @@
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -2721,6 +2720,10 @@
           },
           {
             "name": "last_profit_update",
+            "type": "u64"
+          },
+          {
+            "name": "initial_share_price",
             "type": "u64"
           }
         ]

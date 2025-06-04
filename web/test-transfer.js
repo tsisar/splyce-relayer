@@ -2,7 +2,7 @@ const RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
 const TOKEN_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
 const TOKEN_BRIDGE_ADDRESS = "0xDB5492265f6038831E89f495670FF909aDe94bd9";
 const WORMHOLE_CORE_ADDRESS = "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78";
-const targetContract = "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
+const targetContract = "9tLc6Tt91mxiCsaN4KvVVxZen2HTUtTz3w2UfgqFArvT";
 const sharesRecipient = "G1XjoJpF6NvfSsbkreefjQgTf4JY7upUYABnGqWdozRi";
 const vaultAddress = "FaqoPQMz7d5bkdx7BWNW7F1iFP9JxEDdDHPf42XaDkU6";
 

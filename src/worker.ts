@@ -191,7 +191,14 @@ async function buildExecuteDepositInstruction(
         .instruction();
 }
 
-async function relay(manager: Manager, payer: Keypair, vaa: string, force: boolean = false) {
+async function relay(
+    manager: Manager,
+    payer: Keypair,
+    vaa: string,
+    postToChain: boolean = false,
+    receive: boolean = false,
+    deposit: boolean = false
+) {
     // Set up provider.
     const provider = await manager.getProvider();
     // Get the connection.
@@ -204,25 +211,30 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
     const parsedVaa = parseVaa(signedVaa);
     // Get VAA progress
     const emitterAddressHex = parsedVaa.emitterAddress.toString("hex");
+    // Get latest VAA progress
     const progress = await getVaaProgress(parsedVaa.emitterChain, emitterAddressHex, parsedVaa.sequence.toString());
     log.warn(TAG, "VAA progress:", progress.toString());
+
+    const force = postToChain || receive || deposit;
 
     if (!force && progress == VaaProgress.DEPOSITED) {
         log.debug(TAG, "VAA already deposited");
         return;
     }
 
-    // // Check to see if the VAA has been redeemed already.
-    // const isRedeemed = await getIsTransferCompletedSolana(
-    //     new PublicKey(TOKEN_BRIDGE_PROGRAM_ID.toBase58()),
-    //     signedVaa,
-    //     connection
-    // );
-    //
-    // log.debug(TAG, `VAA has ${isRedeemed ? "already" : "not"} been redeemed${isRedeemed && !force ? " — skipping" : ""}`);
-    // if (!force && isRedeemed) {
-    //     return;
-    // }
+    if (progress < VaaProgress.POSTED_TO_CHAIN) { // no info in DB
+        // Check to see if the VAA has been redeemed already.
+        const isRedeemed = await getIsTransferCompletedSolana(
+            new PublicKey(TOKEN_BRIDGE_PROGRAM_ID.toBase58()),
+            signedVaa,
+            connection
+        );
+
+        log.debug(TAG, `VAA has ${isRedeemed ? "already" : "not"} been redeemed${isRedeemed && !force ? " — skipping" : ""}`);
+        if (!force && isRedeemed) {
+            return;
+        }
+    }
 
     // Make sure it's a payload 3.
     const payloadType = parsedVaa.payload.readUint8(0);
@@ -241,7 +253,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
     const targetAddress = tryHexToNativeString(transferPayload.targetAddress, targetChain);
     log.debug(TAG, "Target address:", targetAddress);
 
-    if (progress < VaaProgress.POSTED_TO_CHAIN) {
+    if (postToChain || progress < VaaProgress.POSTED_TO_CHAIN) {
         // Post the VAA on chain.
         try {
             const signatures = await postVaaOnSolana(connection, payer, CORE_BRIDGE_PROGRAM_ID, signedVaa);
@@ -282,7 +294,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
     const vault = new PublicKey(tryHexToNativeString(vaultAddress, targetChain));
     log.debug(TAG, "Decoded payload vaultAddress:", vault.toBase58());
 
-    if (progress < VaaProgress.RECEIVED) {
+    if (receive || progress < VaaProgress.RECEIVED) {
         try {
             const instruction1 = await buildReceiveInstruction(wormholeProgram, payer, parsedVaa, tokenBridgeWrappedMint);
             log.info(TAG, "Sending transaction...");
@@ -304,7 +316,7 @@ async function relay(manager: Manager, payer: Keypair, vaa: string, force: boole
         }
     }
 
-    if (progress < VaaProgress.DEPOSITED) {
+    if (deposit || progress < VaaProgress.DEPOSITED) {
         try {
             const instruction2 = await buildExecuteDepositInstruction(wormholeProgram, parsedVaa, tokenBridgeWrappedMint, recipient, vault);
             log.info(TAG, "Sending transaction...");
@@ -353,7 +365,14 @@ function getBotKeypair(): Keypair {
 }
 
 
-export async function processVaa(emitterChain: number, emitterAddress: string, sequence: string, vaa: string, force: boolean = false): Promise<void> {
+export async function processVaa(
+    emitterChain: number,
+    emitterAddress: string,
+    sequence: string, vaa: string,
+    postToChain: boolean = false,
+    receive: boolean = false,
+    deposit: boolean = false
+): Promise<void> {
     const payer = getBotKeypair();
     const manager = new Manager(payer);
 
@@ -363,7 +382,7 @@ export async function processVaa(emitterChain: number, emitterAddress: string, s
         log.info(TAG, `Saved VAA to PostgreSQL: ${emitterChain}/${emitterAddress}/${sequence}`);
 
         try {
-            await relay(manager, payer, vaa, force);
+            await relay(manager, payer, vaa, postToChain, receive, deposit);
             await updateVaaStatus(emitterChain, emitterAddress, sequence, "completed");
         } catch (err) {
             const message = err instanceof Error ? err.message : String(err);

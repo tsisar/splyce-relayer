@@ -151,12 +151,22 @@ document.getElementById("manual-fetch-form").addEventListener("submit", async (e
     const emitterChain = form.emitterChain.value.trim();
     const emitterAddress = form.emitterAddress.value.trim();
     const sequence = form.sequence.value.trim();
-    const force = true;
+
+    const postToChain = form.postToChain.checked;
+    const receive = form.receive.checked;
+    const deposit = form.deposit.checked;
 
     const res = await fetch("/api/recover-vaa", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emitterChain, emitterAddress, sequence, force }),
+        body: JSON.stringify({
+            emitterChain,
+            emitterAddress,
+            sequence,
+            postToChain,
+            receive,
+            deposit,
+        }),
     });
 
     const modal = bootstrap.Modal.getInstance(document.getElementById("manualFetchModal"));
@@ -167,6 +177,7 @@ document.getElementById("manual-fetch-form").addEventListener("submit", async (e
     } else {
         alert("Failed to trigger manual fetch");
     }
+
     hideLoading();
     setTimeout(() => window.location.reload(), 500);
 });

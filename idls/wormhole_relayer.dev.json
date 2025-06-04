@@ -1,5 +1,5 @@
 {
-  "address": "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5",
+  "address": "5rZjdjjQf3pmfRGEK3AaG56Z5TGPDb2jLiv8uh1v4PXi",
   "metadata": {
     "name": "wormhole_relayer",
     "version": "0.1.0",
@@ -376,6 +376,48 @@
           }
         },
         {
+          "name": "relayer_role",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "access_control"
+            }
+          }
+        },
+        {
           "name": "relayer_token_account",
           "writable": true,
           "pda": {
@@ -489,14 +531,14 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "327rW4RbawrRdwwS65Lfni4j51PVgWQWg2bg8Dzb3ePS"
         },
         {
           "name": "access_control",
           "docs": [
             "Access Control program"
           ],
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "GrjK4kFoXgc53scE6M56E9MYFQHQ9REwjDEJgRwmJ7RP"
         },
         {
           "name": "system_program",
@@ -1409,8 +1451,7 @@
           "writable": true
         },
         {
-          "name": "vault",
-          "writable": true
+          "name": "vault"
         },
         {
           "name": "underlying_mint",
@@ -1530,7 +1571,7 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "327rW4RbawrRdwwS65Lfni4j51PVgWQWg2bg8Dzb3ePS"
         },
         {
           "name": "system_program",
@@ -1585,7 +1626,7 @@
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -1625,12 +1666,12 @@
         },
         {
           "name": "access_control",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "GrjK4kFoXgc53scE6M56E9MYFQHQ9REwjDEJgRwmJ7RP"
         }
       ],
       "args": [
         {
-          "name": "fee_bps",
+          "name": "fee",
           "type": "u64"
         }
       ]
@@ -1939,7 +1980,7 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "327rW4RbawrRdwwS65Lfni4j51PVgWQWg2bg8Dzb3ePS"
         },
         {
           "name": "system_program",
@@ -2006,7 +2047,7 @@
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -2058,7 +2099,7 @@
         },
         {
           "name": "access_control",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "GrjK4kFoXgc53scE6M56E9MYFQHQ9REwjDEJgRwmJ7RP"
         }
       ],
       "args": [
@@ -2588,11 +2629,20 @@
     },
     {
       "name": "UserRole",
+      "docs": [
+        "User role account that tracks a specific role assignment.",
+        "",
+        "This account represents the assignment of a specific role to a specific user.",
+        "The account address is derived as a PDA from the user's public key and the role ID."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "has_role",
+            "docs": [
+              "Whether the user has the role (true) or not (false)"
+            ],
             "type": "bool"
           }
         ]
@@ -2600,6 +2650,16 @@
     },
     {
       "name": "Vault",
+      "docs": [
+        "The main vault state that manages user deposits, withdrawals, and strategy allocations.",
+        "",
+        "This struct represents a tokenized vault that:",
+        "- Accepts deposits in an underlying token",
+        "- Issues shares representing vault ownership",
+        "- Allocates funds to various investment strategies",
+        "- Manages fees and profit distribution",
+        "- Enforces access controls and limits"
+      ],
       "serialization": "bytemuckunsafe",
       "repr": {
         "kind": "rust",
@@ -2721,6 +2781,39 @@
           },
           {
             "name": "last_profit_update",
+            "type": "u64"
+          },
+          {
+            "name": "initial_share_price",
+            "type": "u64"
+          },
+          {
+            "name": "last_fee_accrual_ts",
+            "docs": [
+              "Last time (unix ts) a streaming-fee inflation was applied."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "management_fee_rate",
+            "docs": [
+              "Annual management-fee rate, fixed-point with 1e7 precision.",
+              "2 % = 200_000   (100 % = 10_000_000)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pending_management_fee_rate",
+            "docs": [
+              "Pending management fee rate that will take effect after the time delay"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fee_update_time",
+            "docs": [
+              "Timestamp when the pending fee rate should take effect"
+            ],
             "type": "u64"
           }
         ]

@@ -5,7 +5,14 @@ import {WORMHOLE_RPC_ENDPOINT} from "./config/config";
 
 const TAG = "recoverVaa";
 
-export async function recoverVaa(emitterChain: number, emitterAddress: string, sequence: string, force: boolean = false): Promise<string> {
+export async function recoverVaa(
+    emitterChain: number,
+    emitterAddress: string,
+    sequence: string,
+    postToChain: boolean = false,
+    receive: boolean = false,
+    deposit: boolean = false
+): Promise<string> {
     log.info(TAG, `Recovering VAA for emitterChain: ${emitterChain}, emitterAddress: ${emitterAddress}, sequence: ${sequence}`);
 
     const endpoints = [
@@ -27,7 +34,7 @@ export async function recoverVaa(emitterChain: number, emitterAddress: string, s
                 log.debug(TAG, "base64 data:", base64);
 
                 // PROCESS VAA
-                await processVaa(emitterChain, emitterAddress, sequence.toString(), base64, force);
+                await processVaa(emitterChain, emitterAddress, sequence.toString(), base64, postToChain, receive, deposit);
 
                 return base64;
             }

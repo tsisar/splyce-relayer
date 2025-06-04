@@ -12,9 +12,9 @@ const TOKEN_BRIDGE_ADDRESS = "0xDB5492265f6038831E89f495670FF909aDe94bd9";
 const WORMHOLE_CORE_ADDRESS = "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"; // optional, for fee
 
 // Solana addresses
-const sharesRecipient = "G1XjoJpF6NvfSsbkreefjQgTf4JY7upUYABnGqWdozRi"; //"0xdf020f31ca795437bfa7365494a78a0de525098071fd55440f9a1a063f1035ad";
-const vaultAddress = "FaqoPQMz7d5bkdx7BWNW7F1iFP9JxEDdDHPf42XaDkU6"; //"0xd8aef6345ab567d48fa84fc351e1b26cff3577a8cf4663d291f064781504b49f";
-const targetContract = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
+const sharesRecipient = "ADRLCFoG3YN4WMRA19oRJbjCJMx2UAfPFbDRe4DkqZWL";
+const vaultAddress = "aVcb2fmzwjCXo3wj67xycmyg9abSwxtWPWygpUnBbBh";
+const targetContract = process.env.WORMHOLE_RELAYER || "5rZjdjjQf3pmfRGEK3AaG56Z5TGPDb2jLiv8uh1v4PXi";
 const recipientChain = 1; // Solana
 const amount = ethers.utils.parseUnits("0.1", 6); // 0.1 USDC
 const batchId = 0;
