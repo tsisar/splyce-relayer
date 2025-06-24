@@ -12,7 +12,7 @@ const TOKEN_BRIDGE_ADDRESS = "0xDB5492265f6038831E89f495670FF909aDe94bd9";
 const WORMHOLE_CORE_ADDRESS = "0x4a8bc80Ed5a4067f1CCf107057b8270E0cC11A78"; // optional, for fee
 
 // Solana addresses
-const sharesRecipient = "ADRLCFoG3YN4WMRA19oRJbjCJMx2UAfPFbDRe4DkqZWL";
+const sharesRecipient = "61225DayqqaNBfQaPumYCvXB4c2rPfCwWHKKbkoFcjto";
 const vaultAddress = "aVcb2fmzwjCXo3wj67xycmyg9abSwxtWPWygpUnBbBh";
 const targetContract = process.env.WORMHOLE_RELAYER || "5rZjdjjQf3pmfRGEK3AaG56Z5TGPDb2jLiv8uh1v4PXi";
 const recipientChain = 1; // Solana
