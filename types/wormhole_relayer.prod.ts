@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/wormhole_relayer.json`.
  */
 export type WormholeRelayer = {
-  "address": "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5",
+  "address": "5rZjdjjQf3pmfRGEK3AaG56Z5TGPDb2jLiv8uh1v4PXi",
   "metadata": {
     "name": "wormholeRelayer",
     "version": "0.1.0",
@@ -382,6 +382,48 @@ export type WormholeRelayer = {
           }
         },
         {
+          "name": "relayerRole",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "accessControl"
+            }
+          }
+        },
+        {
           "name": "relayerTokenAccount",
           "writable": true,
           "pda": {
@@ -495,14 +537,14 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
         },
         {
           "name": "accessControl",
           "docs": [
             "Access Control program"
           ],
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
         },
         {
           "name": "systemProgram",
@@ -1415,8 +1457,7 @@ export type WormholeRelayer = {
           "writable": true
         },
         {
-          "name": "vault",
-          "writable": true
+          "name": "vault"
         },
         {
           "name": "underlyingMint",
@@ -1536,7 +1577,7 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
         },
         {
           "name": "systemProgram",
@@ -1591,7 +1632,7 @@ export type WormholeRelayer = {
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -1631,12 +1672,12 @@ export type WormholeRelayer = {
         },
         {
           "name": "accessControl",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
         }
       ],
       "args": [
         {
-          "name": "feeBps",
+          "name": "fee",
           "type": "u64"
         }
       ]
@@ -1945,7 +1986,7 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
         },
         {
           "name": "systemProgram",
@@ -2012,7 +2053,7 @@ export type WormholeRelayer = {
               {
                 "kind": "const",
                 "value": [
-                  7,
+                  8,
                   0,
                   0,
                   0,
@@ -2064,7 +2105,7 @@ export type WormholeRelayer = {
         },
         {
           "name": "accessControl",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
         }
       ],
       "args": [
@@ -2594,11 +2635,20 @@ export type WormholeRelayer = {
     },
     {
       "name": "userRole",
+      "docs": [
+        "User role account that tracks a specific role assignment.",
+        "",
+        "This account represents the assignment of a specific role to a specific user.",
+        "The account address is derived as a PDA from the user's public key and the role ID."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "hasRole",
+            "docs": [
+              "Whether the user has the role (true) or not (false)"
+            ],
             "type": "bool"
           }
         ]
@@ -2606,6 +2656,16 @@ export type WormholeRelayer = {
     },
     {
       "name": "vault",
+      "docs": [
+        "The main vault state that manages user deposits, withdrawals, and strategy allocations.",
+        "",
+        "This struct represents a tokenized vault that:",
+        "- Accepts deposits in an underlying token",
+        "- Issues shares representing vault ownership",
+        "- Allocates funds to various investment strategies",
+        "- Manages fees and profit distribution",
+        "- Enforces access controls and limits"
+      ],
       "serialization": "bytemuckunsafe",
       "repr": {
         "kind": "rust",
@@ -2727,6 +2787,39 @@ export type WormholeRelayer = {
           },
           {
             "name": "lastProfitUpdate",
+            "type": "u64"
+          },
+          {
+            "name": "initialSharePrice",
+            "type": "u64"
+          },
+          {
+            "name": "lastFeeAccrualTs",
+            "docs": [
+              "Last time (unix ts) a streaming-fee inflation was applied."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "managementFeeRate",
+            "docs": [
+              "Annual management-fee rate, fixed-point with 1e7 precision.",
+              "2 % = 200_000   (100 % = 10_000_000)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pendingManagementFeeRate",
+            "docs": [
+              "Pending management fee rate that will take effect after the time delay"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "feeUpdateTime",
+            "docs": [
+              "Timestamp when the pending fee rate should take effect"
+            ],
             "type": "u64"
           }
         ]

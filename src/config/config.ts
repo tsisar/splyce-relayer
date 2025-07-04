@@ -38,9 +38,9 @@ export const EMITTERS = PRODUCTION ? EMITTERS_PROD : EMITTERS_DEV;
 export const WORMHOLE_ENVIRONMENT = PRODUCTION ? Environment.MAINNET : Environment.TESTNET;
 
 // Address of the relayer contract on Solana
-export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "3VHYnZXdvZYPkHdDxsTyAfKaYzW1tm7kuR5NqPp249x5";
+export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "";
 // Accountant address for vault
-export const ACCOUNTANT = process.env.ACCOUNTANT || "EqMiuTEZuZLUWfZXLbPaT54Snqcq3asoecMdtny7rJC7";
+export const ACCOUNTANT = process.env.ACCOUNTANT || "";
 
 // Wormhole RPC endpoint
 export const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.testnet.wormholescan.io";
@@ -61,7 +61,7 @@ export const POSTGRES_HOST = process.env.POSTGRES_HOST || "postgres";
 export const POSTGRES_PORT = Number(process.env.POSTGRES_PORT) || 5432;
 
 // Worker configuration
-export const PRIVATE_KEY = process.env.PRIVATE_KEY
+export const SOLANA_PRIVATE_KEY = process.env.SOLANA_PRIVATE_KEY
 export const SOLANA_RPC_ENDPOINT = process.env.SOLANA_RPC_ENDPOINT || "https://api.devnet.solana.com";
 export const PRIORITY_LEVEL = process.env.PRIORITY_LEVEL || "Medium"; // "High", "Medium", "Low" Helius priority levels
 export const CONFIRM_TIMEOUT = parseInt(process.env.CONFIRM_TRANSACTION_INITIAL_TIMEOUT || "30000"); // 30 seconds, time to allow for the server to initially process a transaction (in milliseconds)
@@ -74,7 +74,7 @@ export const TRANSACTION_RETRY_INTERVAL = parseInt(process.env.TRANSACTION_RETRY
 export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION !== "false"; // Simulate the transaction before sending it
 
 const HIDDEN_KEYS = [
-    "PRIVATE_KEY",
+    "SOLANA_PRIVATE_KEY",
     "POSTGRES_PASSWORD",
 ];
 

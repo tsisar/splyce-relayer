@@ -6,7 +6,7 @@ import {
 } from "@solana/web3.js";
 import {
     ACCOUNTANT,
-    PRIVATE_KEY,
+    SOLANA_PRIVATE_KEY,
     TOKEN_BRIDGE_PROGRAM,
     CORE_BRIDGE_PROGRAM
 } from "./config/config";
@@ -40,7 +40,7 @@ import {WormholeRelayer} from "./provider/programs/wormhole_relayer";
 import {Program} from "@coral-xyz/anchor";
 import AsyncLock from "async-lock";
 import {
-    saveTxHash, saveVaa, getVaa,
+    saveTxHash, saveVaa,
     updateVaaStatus, getVaaProgress, updateVaaProgress
 } from "./pg-storage/vaa";
 import {VaaProgress} from "./pg-storage/types";
@@ -342,23 +342,23 @@ async function relay(
 function getBotKeypair(): Keypair {
     let privateKeyArray: number[] = [];
 
-    if (PRIVATE_KEY) {
+    if (SOLANA_PRIVATE_KEY) {
         try {
-            privateKeyArray = JSON.parse(PRIVATE_KEY);
+            privateKeyArray = JSON.parse(SOLANA_PRIVATE_KEY);
         } catch (error) {
-            log.error(TAG, "Error parsing PRIVATE_KEY:", error);
-            throw new Error("Invalid PRIVATE_KEY format. It should be a JSON array of numbers.");
+            log.error(TAG, "Error parsing SOLANA_PRIVATE_KEY:", error);
+            throw new Error("Invalid SOLANA_PRIVATE_KEY format. It should be a JSON array of numbers.");
         }
     } else {
-        throw new Error("PRIVATE_KEY is not set in the environment variables.");
+        throw new Error("SOLANA_PRIVATE_KEY is not set in the environment variables.");
     }
 
     if (!Array.isArray(privateKeyArray)) {
-        throw new Error("PRIVATE_KEY is not a valid array");
+        throw new Error("SOLANA_PRIVATE_KEY is not a valid array");
     }
 
     if (privateKeyArray.length !== 64) {
-        throw new Error("Invalid PRIVATE_KEY length. Expected 64 bytes.");
+        throw new Error("Invalid SOLANA_PRIVATE_KEY length. Expected 64 bytes.");
     }
 
     return Keypair.fromSecretKey(Uint8Array.from(privateKeyArray));
