@@ -13,13 +13,14 @@ import { processVaa } from "./worker";
 import {
     SPY_HOST,
     SPY_PORT,
-    WORMHOLE_RELAYER,
+    SOLANA_WORMHOLE_RELAYER,
+    SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE,
     WORMHOLE_RPC_ENDPOINT,
     REDIS_HOST,
     REDIS_PORT,
     EMITTERS,
     WORMHOLE_ENVIRONMENT,
-    getStartingSequenceConfig
+    getStartingSequenceConfig, INSTANCE_NAME
 } from "./config/config";
 
 import {
@@ -73,56 +74,22 @@ const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
         return;
     }
 
-    if (receiver !== WORMHOLE_RELAYER) {
+    if (receiver !== SOLANA_WORMHOLE_RELAYER && receiver !== SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE) {
         ctx.logger.debug(`Filtered out receiver: ${receiver}`);
-        ctx.logger.debug(`Expected: ${WORMHOLE_RELAYER}, got: ${receiver}`);
+        ctx.logger.debug(`Expected: ${SOLANA_WORMHOLE_RELAYER} or ${SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE}, got: ${receiver}`);
         return;
     }
 
     return next();
 };
 
-const logVaaDetails = (ctx: StandardRelayerContext): void => {
-    const { vaa, tokenBridge, sourceTxHash } = ctx;
-
-    if (!vaa || !tokenBridge?.payload) {
-        ctx.logger.warn("Missing VAA or tokenBridge payload, skipping detailed logging");
-        return;
-    }
-
-    const payload = tokenBridge.payload;
-
-    const token = `${payload.tokenChain}:${payload.tokenAddress.toString("hex")}`;
-    const amount = payload.amount;
-    const sender = payload.fromAddress?.toString("hex");
-    const receiverAddress = payload.to.toString("hex");
-    const receiver = tryHexToNativeString(receiverAddress, payload.toChain as ChainId);
-    const target = `${payload.toChain}:${receiver}`;
-    const txHash = sourceTxHash;
-
-    ctx.logger.info(`VAA received — chain: ${vaa.emitterChain}, seq: ${vaa.sequence}`);
-    ctx.logger.info(
-        [
-            `TransferWithPayload Details:`,
-            `  • Token:   ${token}`,
-            `  • Amount:  ${amount}`,
-            `  • Sender:  ${sender}`,
-            `  • Receiver:${target}`,
-            `  • Payload: ${payload.tokenTransferPayload.toString("hex")}`,
-            `  • TxHash:  ${txHash}`,
-        ].join("\n")
-    );
-};
-
 export async function startRelayer() {
-
-
     await info('Service started successfully');
 
     const app = new StandardRelayerApp<StandardRelayerContext>(
         WORMHOLE_ENVIRONMENT,
         {
-            name: `splyce-relayer-solana`,
+            name: INSTANCE_NAME,
             spyEndpoint: `${SPY_HOST}:${SPY_PORT}`, // Endpoint for Wormhole Spy to receive live VAAs
             wormholeRpcs: [WORMHOLE_RPC_ENDPOINT], // Wormhole RPC endpoints used to fetch VAAs (especially for backfill)
             // Redis configuration used for seenVaas, missedVaas tracking, and BullMQ job queues
@@ -149,17 +116,46 @@ export async function startRelayer() {
 
     for (const {chainId, address} of EMITTERS) {
         app.chain(chainId).address(address, async (ctx, next) => {
-            logVaaDetails(ctx);
+            const { vaa, tokenBridge, sourceTxHash } = ctx;
 
-            const vaa = ctx.vaa!;
+            if (!vaa || !tokenBridge?.payload) {
+                ctx.logger.warn("Missing VAA or tokenBridge payload, skipping detailed logging");
+                return;
+            }
+
+            const payload = tokenBridge.payload;
+
+            const token = `${payload.tokenChain}:${payload.tokenAddress.toString("hex")}`;
+            const amount = payload.amount;
+            const sender = payload.fromAddress?.toString("hex");
+            const receiverAddress = payload.to.toString("hex");
+            const receiver = tryHexToNativeString(receiverAddress, payload.toChain as ChainId);
+            const target = `${payload.toChain}:${receiver}`;
+            const txHash = sourceTxHash;
             const vaaBase64 = vaa.bytes.toString("base64");
             const emitterAddress = vaa.emitterAddress.toString("hex");
             const sequence = vaa.sequence.toString();
             const emitterChain = vaa.emitterChain;
-            const sourceTxHash = ctx.sourceTxHash;
+
+            ctx.logger.info(`VAA received — chain: ${vaa.emitterChain}, seq: ${vaa.sequence}`);
+            ctx.logger.info(
+                [
+                    `TransferWithPayload Details:`,
+                    `  • Token:   ${token}`,
+                    `  • Amount:  ${amount}`,
+                    `  • Sender:  ${sender}`,
+                    `  • Receiver:${target}`,
+                    `  • Payload: ${payload.tokenTransferPayload.toString("hex")}`,
+                    `  • TxHash:  ${txHash}`,
+                ].join("\n")
+            );
 
             try {
-                await processVaa(emitterChain, emitterAddress, sequence, vaaBase64);
+                if (receiver.toString() === SOLANA_WORMHOLE_RELAYER) {
+                    await processVaa(emitterChain, emitterAddress, sequence, vaaBase64);
+                } else {
+                    ctx.logger.info(`Skipping processing for receiver: ${receiver}`);
+                }
             } catch (e) {
                 const message = e instanceof Error ? e.message : String(e);
                 await error(`Error processing VAA: ${message}\nSequence: ${sequence}\nSource Tx Hash: ${sourceTxHash}`);

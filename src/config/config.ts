@@ -10,6 +10,7 @@ dotenv.config();
 // const idl = JSON.parse(rawIdl);
 
 // Environment configuration
+export const INSTANCE_NAME = process.env.INSTANCE_NAME || "wormhole-relayer-solana"; // Unique identifier for the instance
 export const ENVIRONMENT = process.env.ENVIRONMENT || "dev"; // "prod" or "dev"
 export const PRODUCTION = ENVIRONMENT === "prod" || false;
 
@@ -38,7 +39,9 @@ export const EMITTERS = PRODUCTION ? EMITTERS_PROD : EMITTERS_DEV;
 export const WORMHOLE_ENVIRONMENT = PRODUCTION ? Environment.MAINNET : Environment.TESTNET;
 
 // Address of the relayer contract on Solana
-export const WORMHOLE_RELAYER = process.env.WORMHOLE_RELAYER || "";
+export const SOLANA_WORMHOLE_RELAYER = process.env.SOLANA_WORMHOLE_RELAYER || "";
+export const SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE = process.env.SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE || "";
+
 // Accountant address for vault
 export const ACCOUNTANT = process.env.ACCOUNTANT || "";
 
@@ -59,6 +62,7 @@ export const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || "password";
 export const POSTGRES_DB = process.env.POSTGRES_DB || "relayer-db";
 export const POSTGRES_HOST = process.env.POSTGRES_HOST || "postgres";
 export const POSTGRES_PORT = Number(process.env.POSTGRES_PORT) || 5432;
+export const POSTGRES_SCHEMA = process.env.POSTGRES_SCHEMA || "wormhole_relayer_solana"; // Default schema for PostgreSQL
 
 // Worker configuration
 export const SOLANA_PRIVATE_KEY = process.env.SOLANA_PRIVATE_KEY

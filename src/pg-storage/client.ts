@@ -4,7 +4,8 @@ import {
     POSTGRES_HOST,
     POSTGRES_PASSWORD,
     POSTGRES_PORT,
-    POSTGRES_USER
+    POSTGRES_USER,
+    POSTGRES_SCHEMA,
 } from "../config/config";
 
 export const pgPool = new Pool({
@@ -15,7 +16,13 @@ export const pgPool = new Pool({
     port: POSTGRES_PORT,
 });
 
+pgPool.on("connect", client => {
+    client.query(`SET search_path TO ${POSTGRES_SCHEMA};`).catch(console.error);
+});
+
 export async function initPgStorage() {
+    await pgPool.query(`CREATE SCHEMA IF NOT EXISTS ${POSTGRES_SCHEMA};`);
+
     await pgPool.query(`
         CREATE TABLE IF NOT EXISTS vaa_storage
         (
