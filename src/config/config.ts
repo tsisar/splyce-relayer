@@ -64,6 +64,11 @@ export const POSTGRES_HOST = process.env.POSTGRES_HOST || "postgres";
 export const POSTGRES_PORT = Number(process.env.POSTGRES_PORT) || 5432;
 export const POSTGRES_SCHEMA = process.env.POSTGRES_SCHEMA || "wormhole_relayer_solana"; // Default schema for PostgreSQL
 
+export const RABBITMQ_HOST = process.env.RABBITMQ_HOST || "localhost";
+export const RABBITMQ_PORT = process.env.RABBITMQ_PORT ? parseInt(process.env.RABBITMQ_PORT) : 5672;
+export const RABBITMQ_USER = process.env.RABBITMQ_USER || "guest";
+export const RABBITMQ_PASSWORD = process.env.RABBITMQ_PASSWORD || "guest";
+
 // Worker configuration
 export const SOLANA_PRIVATE_KEY = process.env.SOLANA_PRIVATE_KEY
 export const SOLANA_RPC_ENDPOINT = process.env.SOLANA_RPC_ENDPOINT || "https://api.devnet.solana.com";
