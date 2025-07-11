@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/wormhole_relayer.json`.
  */
 export type WormholeRelayer = {
-  "address": "5rZjdjjQf3pmfRGEK3AaG56Z5TGPDb2jLiv8uh1v4PXi",
+  "address": "5tYkE3QhKx2gzgqANnMJHZhQ4aGPkEuUFUST1mhDUxbP",
   "metadata": {
     "name": "wormholeRelayer",
     "version": "0.1.0",
@@ -537,14 +537,14 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "accessControl",
           "docs": [
             "Access Control program"
           ],
-          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         },
         {
           "name": "systemProgram",
@@ -1577,7 +1577,7 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "systemProgram",
@@ -1672,7 +1672,7 @@ export type WormholeRelayer = {
         },
         {
           "name": "accessControl",
-          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         }
       ],
       "args": [
@@ -1986,7 +1986,7 @@ export type WormholeRelayer = {
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "JDU545Gq5wsnZWZWPvgjJKqtmsSKZJAtCePnZYZTzNbb"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "systemProgram",
@@ -2105,7 +2105,7 @@ export type WormholeRelayer = {
         },
         {
           "name": "accessControl",
-          "address": "2wTpz8K1hYkZw75HkqVxB1RZNF5sC4n3d9dPfaMW5fcx"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         }
       ],
       "args": [

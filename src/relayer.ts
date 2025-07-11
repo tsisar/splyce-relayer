@@ -4,6 +4,7 @@ import {
     Middleware,
 } from "@wormhole-foundation/relayer-engine";
 import {
+    CHAIN_ID_ETH, CHAIN_ID_SEPOLIA,
     CHAIN_ID_SOLANA,
     ChainId
 } from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
@@ -70,7 +71,7 @@ const filter: Middleware<StandardRelayerContext> = async (ctx, next) => {
         return;
     }
 
-    if (toChainTyped !== CHAIN_ID_SOLANA) {
+    if (toChainTyped !== CHAIN_ID_SOLANA && toChainTyped !== CHAIN_ID_ETH && toChainTyped !== CHAIN_ID_SEPOLIA) {
         ctx.logger.debug(`Filtered out toChain: ${toChainTyped}`);
         return;
     }

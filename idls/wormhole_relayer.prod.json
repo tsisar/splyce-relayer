@@ -1,5 +1,5 @@
 {
-  "address": "9tLc6Tt91mxiCsaN4KvVVxZen2HTUtTz3w2UfgqFArvT",
+  "address": "5tYkE3QhKx2gzgqANnMJHZhQ4aGPkEuUFUST1mhDUxbP",
   "metadata": {
     "name": "wormhole_relayer",
     "version": "0.1.0",
@@ -376,6 +376,48 @@
           }
         },
         {
+          "name": "relayer_role",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  117,
+                  115,
+                  101,
+                  114,
+                  95,
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "payer"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  7,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ],
+            "program": {
+              "kind": "account",
+              "path": "access_control"
+            }
+          }
+        },
+        {
           "name": "relayer_token_account",
           "writable": true,
           "pda": {
@@ -489,14 +531,14 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "access_control",
           "docs": [
             "Access Control program"
           ],
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         },
         {
           "name": "system_program",
@@ -1529,7 +1571,7 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "system_program",
@@ -1624,12 +1666,12 @@
         },
         {
           "name": "access_control",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         }
       ],
       "args": [
         {
-          "name": "fee_bps",
+          "name": "fee",
           "type": "u64"
         }
       ]
@@ -1938,7 +1980,7 @@
           "docs": [
             "Tokenized Vault program"
           ],
-          "address": "8W6y1nfFM9Z5tCZfebUwvSzBtNBR8pbuGhfLHJBFtYUT"
+          "address": "DLq1YJfr7zVR7zk87LNsionztY9a1ZmCXoZg1Cdu6BtS"
         },
         {
           "name": "system_program",
@@ -2057,7 +2099,7 @@
         },
         {
           "name": "access_control",
-          "address": "HypkKDB5Mxv9WbBTc9dFWkowFN38NRgc1fbTpgBWfBEe"
+          "address": "CcVspP4Jch5sLDUnjPdvkUkWT5fTroMw3PSPjw1M25yi"
         }
       ],
       "args": [
@@ -2587,11 +2629,20 @@
     },
     {
       "name": "UserRole",
+      "docs": [
+        "User role account that tracks a specific role assignment.",
+        "",
+        "This account represents the assignment of a specific role to a specific user.",
+        "The account address is derived as a PDA from the user's public key and the role ID."
+      ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "has_role",
+            "docs": [
+              "Whether the user has the role (true) or not (false)"
+            ],
             "type": "bool"
           }
         ]
@@ -2599,6 +2650,16 @@
     },
     {
       "name": "Vault",
+      "docs": [
+        "The main vault state that manages user deposits, withdrawals, and strategy allocations.",
+        "",
+        "This struct represents a tokenized vault that:",
+        "- Accepts deposits in an underlying token",
+        "- Issues shares representing vault ownership",
+        "- Allocates funds to various investment strategies",
+        "- Manages fees and profit distribution",
+        "- Enforces access controls and limits"
+      ],
       "serialization": "bytemuckunsafe",
       "repr": {
         "kind": "rust",
@@ -2724,6 +2785,35 @@
           },
           {
             "name": "initial_share_price",
+            "type": "u64"
+          },
+          {
+            "name": "last_fee_accrual_ts",
+            "docs": [
+              "Last time (unix ts) a streaming-fee inflation was applied."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "management_fee_rate",
+            "docs": [
+              "Annual management-fee rate, fixed-point with 1e7 precision.",
+              "2 % = 200_000   (100 % = 10_000_000)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pending_management_fee_rate",
+            "docs": [
+              "Pending management fee rate that will take effect after the time delay"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fee_update_time",
+            "docs": [
+              "Timestamp when the pending fee rate should take effect"
+            ],
             "type": "u64"
           }
         ]

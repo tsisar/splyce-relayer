@@ -1,7 +1,12 @@
 import * as fs from 'fs';
 import * as dotenv from "dotenv";
 import {WORMHOLE} from "./constants";
-import {CHAIN_ID_SEPOLIA, CHAIN_ID_BSC, CHAIN_ID_ETH} from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
+import {
+    CHAIN_ID_SEPOLIA,
+    CHAIN_ID_BSC,
+    CHAIN_ID_ETH,
+    CHAIN_ID_SOLANA
+} from "@certusone/wormhole-sdk/lib/cjs/utils/consts";
 import {Environment} from "@wormhole-foundation/relayer-engine";
 
 dotenv.config();
@@ -21,6 +26,10 @@ const EMITTERS_PROD = [
     {
         chainId: CHAIN_ID_ETH,
         address: WORMHOLE.PROD.TOKEN_BRIDGES.ETHEREUM
+    },
+    {
+        chainId: CHAIN_ID_SOLANA,
+        address: WORMHOLE.PROD.TOKEN_BRIDGES.SOLANA
     },
 ];
 
