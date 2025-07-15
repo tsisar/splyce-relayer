@@ -55,7 +55,8 @@ export const SOLANA_EXTERNAL_AGGREGATOR_WORMHOLE = process.env.SOLANA_EXTERNAL_A
 export const ACCOUNTANT = process.env.ACCOUNTANT || "";
 
 // Wormhole RPC endpoint
-export const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.testnet.wormholescan.io";
+export const WORMHOLE_RPC_ENDPOINT = process.env.WORMHOLE_RPC_ENDPOINT || "https://api.wormholescan.io";
+export const WORMHOLESCAN_API_KEY = process.env.WORMHOLESCAN_API_KEY || "";
 
 // Spy server configuration
 export const SPY_HOST = process.env.SPY_HOST || "localhost";
@@ -94,6 +95,7 @@ export const SIMULATE_TRANSACTION = process.env.SIMULATE_TRANSACTION !== "false"
 const HIDDEN_KEYS = [
     "SOLANA_PRIVATE_KEY",
     "POSTGRES_PASSWORD",
+    "TELEGRAM_BOT_TOKEN",
 ];
 
 export const getStartingSequenceConfig = (): Record<number, bigint> => {
@@ -115,7 +117,7 @@ export const getStartingSequenceConfig = (): Record<number, bigint> => {
 console.log("Loaded ENV variables:");
 Object.entries(process.env).forEach(([key, value]) => {
     if (HIDDEN_KEYS.includes(key)) {
-        console.log(`${key}=***`);
+        console.log(`${key}=***super_secret***`);
     } else {
         console.log(`${key}=${value}`);
     }

@@ -11,7 +11,7 @@ RUN npm ci
 
 COPY . .
 
-ARG ENVIRONMENT=devnet
+ARG ENVIRONMENT=mainnet
 ENV ENVIRONMENT=${ENVIRONMENT}
 
 RUN npm run build

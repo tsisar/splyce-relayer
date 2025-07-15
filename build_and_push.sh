@@ -25,8 +25,8 @@ docker buildx create --use --name mybuilder
 docker buildx inspect mybuilder --bootstrap
 
 # 3. Build Docker image for multiple platforms
-print_header "Building Docker image ${IMAGE_NAME}:${TAG}-dev for multiple platforms"
-docker buildx build --platform linux/amd64 -t ${IMAGE_NAME}:${TAG}-dev --push .
+print_header "Building Docker image ${IMAGE_NAME}:${TAG} for multiple platforms"
+docker buildx build --platform linux/amd64 -t ${IMAGE_NAME}:${TAG} --push .
 
 # Check if the image build was successful
 if [ $? -ne 0 ]; then
@@ -46,4 +46,4 @@ if [ ! -z "$CONTAINER_ID" ]; then
 fi
 
 # 5. Push Docker container (already done during buildx build --push)
-print_header "Docker container image ${IMAGE_NAME}:${TAG}-dev has been pushed to Docker Hub"
+print_header "Docker container image ${IMAGE_NAME}:${TAG} has been pushed to Docker Hub"

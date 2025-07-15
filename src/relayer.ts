@@ -1,7 +1,7 @@
 import {
     StandardRelayerApp,
     StandardRelayerContext,
-    Middleware,
+    Middleware, Next,
 } from "@wormhole-foundation/relayer-engine";
 import {
     CHAIN_ID_ETH, CHAIN_ID_SEPOLIA,
@@ -21,7 +21,7 @@ import {
     REDIS_PORT,
     EMITTERS,
     WORMHOLE_ENVIRONMENT,
-    getStartingSequenceConfig, INSTANCE_NAME
+    getStartingSequenceConfig, INSTANCE_NAME, WORMHOLESCAN_API_KEY
 } from "./config/config";
 
 import {
@@ -104,9 +104,9 @@ export async function startRelayer() {
             // Configuration for the missed VAA recovery worker (backfill logic)
             missedVaaOptions: {
                 concurrency: 1,  // Number of concurrent missed VAA processing jobs/ should be 1 because of we use 1 key in worker
-                checkInterval: 15000, // Interval (ms) between checks for missed VAAs
-                fetchVaaRetries: 3, // How many times to retry fetching a missed VAA
-                vaasFetchConcurrency: 4, // Number of VAA fetches to run in parallel
+                checkInterval: 60000, // Interval (ms) between checks for missed VAAs
+                fetchVaaRetries: 5, // How many times to retry fetching a missed VAA
+                vaasFetchConcurrency: 1, // Number of VAA fetches to run in parallel
                 // Explicit starting sequence for each emitter if no seenVaas exist in Redis
                 startingSequenceConfig: getStartingSequenceConfig(),
             },
@@ -122,6 +122,32 @@ export async function startRelayer() {
             return next();
         });
     }
+
+    app.use(async (ctx: StandardRelayerContext, next: Next) => {
+        const vaa = ctx.vaa;
+        if (!vaa) return next();
+
+        const url = `https://api.wormholescan.io/api/v1/vaas/${vaa.emitterChain}/${vaa.emitterAddress.toString("hex")}/${vaa.sequence}`;
+
+        try {
+            const res = await fetch(url, {
+                headers: {
+                    "X-API-Key": WORMHOLESCAN_API_KEY,
+                },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                ctx.sourceTxHash = data.txHash || null;
+            } else {
+                ctx.logger.warn(`wormholescan error ${res.status}: ${await res.text()}`);
+            }
+        } catch (e) {
+            ctx.logger.error(`Failed to fetch txHash from wormholescan: ${e}`);
+        }
+
+        return next();
+    });
 
     await app.listen();
 }
@@ -163,8 +189,10 @@ async function handleTransferWithPayload(ctx: any): Promise<void> {
 
     try {
         if (receiver.toString() === SOLANA_WORMHOLE_RELAYER) {
+            ctx.logger.info(`Processing VAA for relayer: ${receiver}`);
             await processVaa(emitterChain, emitterAddress, sequence, vaaBase64);
         } else {
+            ctx.logger.info(`Sending VAA to queue for processing: ${receiver}`);
             await sendToQueue("vaa_queue", {emitterChain, emitterAddress, sequence, vaaBase64, receiver,});
         }
     } catch (e) {
